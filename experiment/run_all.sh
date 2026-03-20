@@ -58,15 +58,23 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
   TYPE=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['type'])")
   PROMPT_SET=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['prompt_set'])")
   NUM_RUNS=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['runs'])")
+  RUN_MODEL=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx].get('model', ''))")
+  RUN_PHASE=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx].get('phase', 1))")
 
   for run_num in $(seq 1 "$NUM_RUNS"); do
     # Determine results directory using standardized paths
+    # Phase 2 includes model in path to distinguish runs with different models
+    MODEL_SUFFIX=""
+    if [ -n "$RUN_MODEL" ]; then
+      MODEL_SUFFIX="/${RUN_MODEL}"
+    fi
+
     if [ "$TYPE" == "erosion" ]; then
       SCRIPT="./experiment/run_experiment.sh"
-      RESULTS_DIR="results/${AGENT}/${PROMPT_SET}/run-${run_num}"
+      RESULTS_DIR="results/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET}/run-${run_num}"
     elif [ "$TYPE" == "control_a" ]; then
       SCRIPT="./experiment/run_control_a.sh"
-      RESULTS_DIR="results/control_a/${AGENT}/${PROMPT_SET}/run-${run_num}"
+      RESULTS_DIR="results/control_a/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET}/run-${run_num}"
     fi
 
     # Check if already complete — validate results contain preservation_score key
@@ -81,16 +89,16 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
       continue
     fi
 
-    RUN_LABEL="${TYPE}/${AGENT}/${PROMPT_SET} run ${run_num}/${NUM_RUNS}"
+    RUN_LABEL="${TYPE}/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET} run ${run_num}/${NUM_RUNS}"
     log "--- ${RUN_LABEL} ---"
 
     if [ "$DRY_RUN" == "true" ]; then
-      log "  DRY RUN: would execute ${SCRIPT} ${AGENT} ${PROMPT_SET} ${ITERATIONS} ${run_num}"
+      log "  DRY RUN: would execute MODEL=${RUN_MODEL:-default} ${SCRIPT} ${AGENT} ${PROMPT_SET} ${ITERATIONS} ${run_num}"
       continue
     fi
 
-    # Execute — both erosion and control_a have same signature: <agent> <prompt_set> <iterations> <run_number>
-    if $SCRIPT "$AGENT" "$PROMPT_SET" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"; then
+    # Execute — pass MODEL env var for Phase 2 model override
+    if MODEL="${RUN_MODEL:-}" $SCRIPT "$AGENT" "$PROMPT_SET" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"; then
       COMPLETED=$((COMPLETED + 1))
       log "${RUN_LABEL} — COMPLETED"
     else

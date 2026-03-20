@@ -1,40 +1,39 @@
 package dev.cdelmonte.collecting.distribution;
 
+import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
  * Per-holder financial result produced by a distribution run.
  * Each royalty statement captures the computed royalty amount
  * for a specific rights holder within a distribution run.
- *
- * S10: Extends {@link Report} — speculative generality base class.
  */
 public class RoyaltyStatement extends Report {
 
     private final UUID distributionRunId;
     private final UUID rightsHolderId;
     private final String rightsHolderName;
-    private double totalAmount;
-    private String currency;
+    private final String currency;
+    private BigDecimal totalAmount;
 
     public RoyaltyStatement(UUID id, UUID distributionRunId,
-                            UUID rightsHolderId, String rightsHolderName) {
+                            UUID rightsHolderId, String rightsHolderName, String currency) {
         super(id);
-        this.distributionRunId = distributionRunId;
-        this.rightsHolderId = rightsHolderId;
-        this.rightsHolderName = rightsHolderName;
-        this.totalAmount = 0.0;
-        this.currency = "EUR";
+        this.distributionRunId = Objects.requireNonNull(distributionRunId, "distributionRunId must not be null");
+        this.rightsHolderId = Objects.requireNonNull(rightsHolderId, "rightsHolderId must not be null");
+        this.rightsHolderName = Objects.requireNonNull(rightsHolderName, "rightsHolderName must not be null");
+        this.currency = Objects.requireNonNull(currency, "currency must not be null");
+        this.totalAmount = BigDecimal.ZERO;
     }
 
     public UUID getDistributionRunId() { return distributionRunId; }
     public UUID getRightsHolderId() { return rightsHolderId; }
     public String getRightsHolderName() { return rightsHolderName; }
-    public double getTotalAmount() { return totalAmount; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
     public String getCurrency() { return currency; }
 
-    public void addAmount(double amount) { this.totalAmount += amount; }
-    public void setCurrency(String currency) { this.currency = currency; }
+    public void addAmount(BigDecimal amount) { this.totalAmount = this.totalAmount.add(amount); }
 
     @Override
     public String formatReport() {

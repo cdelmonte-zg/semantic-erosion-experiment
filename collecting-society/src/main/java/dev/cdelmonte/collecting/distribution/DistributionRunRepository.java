@@ -11,7 +11,7 @@ public interface DistributionRunRepository {
 
     Optional<DistributionRun> findById(UUID id);
 
-    List<DistributionRun> findByStatus(String status);
+    List<DistributionRun> findByStatus(DistributionStatus status);
 
     void save(DistributionRun distributionRun);
 }

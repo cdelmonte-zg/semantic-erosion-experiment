@@ -52,13 +52,13 @@ echo "============================================================"
 
 cd "$COLLECTING_SOCIETY"
 
-# Load API keys
-if [ -f ~/.config/gemini.env ]; then
-  set -a; source ~/.config/gemini.env; set +a
-  export GEMINI_API_KEY
-  export GOOGLE_GENERATIVE_AI_API_KEY="${GEMINI_API_KEY}"
-  cp -f ~/.config/gemini.env "${COLLECTING_SOCIETY}/.env" 2>/dev/null || true
-fi
+# Load API keys (not exported globally — Claude Code must use Max subscription)
+for ENV_FILE in "${COLLECTING_SOCIETY}/.env" ~/.config/gemini.env ~/.config/api_keys.env; do
+  if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+  fi
+done
+export GOOGLE_GENERATIVE_AI_API_KEY="${GEMINI_API_KEY:-}"
 
 # Reset source code to baseline
 if git rev-parse "v0" >/dev/null 2>&1; then
@@ -90,22 +90,45 @@ python "${PROJECT_ROOT}/experiment/measure_fidelity.py" \
   --output "$RESULTS_DIR/iteration-0.json" \
   --no-distance
 
+# --- Model selection (same as run_experiment.sh) ---
+MODEL="${MODEL:-claude-sonnet-4-20250514}"
+
 # Agent runner (same as run_experiment.sh)
 run_agent() {
   local PROMPT="$1"
   local LOG_FILE="$2"
 
   if [ "$AGENT" == "claude_code" ]; then
-    claude --dangerously-skip-permissions -p "$PROMPT" \
+    env -u ANTHROPIC_API_KEY claude --dangerously-skip-permissions -p "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
+
   elif [ "$AGENT" == "opencode" ]; then
-    opencode run "$PROMPT" \
+    local OC_MODEL OC_KEY
+    case "$MODEL" in
+      claude-sonnet*|anthropic*)  OC_MODEL="anthropic/claude-sonnet-4-20250514"; OC_KEY="$ANTHROPIC_API_KEY" ;;
+      gpt-4o*|openai*)            OC_MODEL="openai/gpt-4o"; OC_KEY="$OPENAI_API_KEY" ;;
+      qwen*|ollama*)              OC_MODEL="ollama/qwen3-coder-experiment"; OC_KEY="none" ;;
+      gemini*)                    OC_MODEL="google/gemini-2.5-flash"; OC_KEY="$GEMINI_API_KEY" ;;
+      *)                          OC_MODEL="anthropic/claude-sonnet-4-20250514"; OC_KEY="$ANTHROPIC_API_KEY" ;;
+    esac
+    ANTHROPIC_API_KEY="$OC_KEY" OPENAI_API_KEY="$OC_KEY" \
+    OPENCODE_MODEL="$OC_MODEL" opencode run "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
+
   elif [ "$AGENT" == "openhands" ]; then
-    LLM_API_KEY="${GEMINI_API_KEY:-}" \
-    LLM_MODEL="gemini/gemini-2.5-flash" \
+    local OH_MODEL OH_KEY
+    case "$MODEL" in
+      claude-sonnet*|anthropic*)  OH_MODEL="anthropic/claude-sonnet-4-20250514"; OH_KEY="$ANTHROPIC_API_KEY" ;;
+      gpt-4o*|openai*)            OH_MODEL="openai/gpt-4o"; OH_KEY="$OPENAI_API_KEY" ;;
+      qwen*|ollama*)              OH_MODEL="ollama_chat/qwen3-coder-experiment"; OH_KEY="none" ;;
+      gemini*)                    OH_MODEL="gemini/gemini-2.5-flash"; OH_KEY="$GEMINI_API_KEY" ;;
+      *)                          OH_MODEL="anthropic/claude-sonnet-4-20250514"; OH_KEY="$ANTHROPIC_API_KEY" ;;
+    esac
+    LLM_API_KEY="$OH_KEY" \
+    LLM_MODEL="$OH_MODEL" \
     openhands --headless --override-with-envs -t "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
+
   else
     echo "ERROR: Unknown agent '${AGENT}'."
     return 1

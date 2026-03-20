@@ -1,5 +1,7 @@
 package dev.cdelmonte.collecting.musicalwork;
 
+import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -12,15 +14,13 @@ public class MusicalWork {
     private String title;
     private String iswcCode;        // International Standard Musical Work Code
 
-    // S6: Data Clump — rights holder share represented as loose fields
-    //     instead of a dedicated RightsShare value object
     private UUID rightsHolderId;
-    private double rightsSharePercentage;   // 0.0 to 1.0
+    private BigDecimal rightsSharePercentage;   // 0.0 to 1.0
 
     public MusicalWork(UUID id, String title, String iswcCode,
-                       UUID rightsHolderId, double rightsSharePercentage) {
-        this.id = id;
-        this.title = title;
+                       UUID rightsHolderId, BigDecimal rightsSharePercentage) {
+        this.id = Objects.requireNonNull(id, "id must not be null");
+        this.title = Objects.requireNonNull(title, "title must not be null");
         this.iswcCode = iswcCode;
         this.rightsHolderId = rightsHolderId;
         this.rightsSharePercentage = rightsSharePercentage;
@@ -30,12 +30,26 @@ public class MusicalWork {
     public String getTitle() { return title; }
     public String getIswcCode() { return iswcCode; }
     public UUID getRightsHolderId() { return rightsHolderId; }
-    public double getRightsSharePercentage() { return rightsSharePercentage; }
+    public BigDecimal getRightsSharePercentage() { return rightsSharePercentage; }
 
-    public void setTitle(String title) { this.title = title; }
+    public void setTitle(String title) {
+        this.title = Objects.requireNonNull(title, "title must not be null");
+    }
     public void setIswcCode(String iswcCode) { this.iswcCode = iswcCode; }
     public void setRightsHolderId(UUID rightsHolderId) { this.rightsHolderId = rightsHolderId; }
-    public void setRightsSharePercentage(double rightsSharePercentage) {
+    public void setRightsSharePercentage(BigDecimal rightsSharePercentage) {
         this.rightsSharePercentage = rightsSharePercentage;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MusicalWork other)) return false;
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

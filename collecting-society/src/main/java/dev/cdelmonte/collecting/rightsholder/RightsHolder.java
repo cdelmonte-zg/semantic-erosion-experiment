@@ -1,5 +1,6 @@
 package dev.cdelmonte.collecting.rightsholder;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -15,8 +16,8 @@ public class RightsHolder {
     private String bankAccount;     // IBAN for royalty payouts
 
     public RightsHolder(UUID id, String name, String ipiNumber, String bankAccount) {
-        this.id = id;
-        this.name = name;
+        this.id = Objects.requireNonNull(id, "id must not be null");
+        this.name = Objects.requireNonNull(name, "name must not be null");
         this.ipiNumber = ipiNumber;
         this.bankAccount = bankAccount;
     }
@@ -29,4 +30,16 @@ public class RightsHolder {
     public void setName(String name) { this.name = name; }
     public void setIpiNumber(String ipiNumber) { this.ipiNumber = ipiNumber; }
     public void setBankAccount(String bankAccount) { this.bankAccount = bankAccount; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RightsHolder other)) return false;
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

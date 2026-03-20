@@ -1,6 +1,7 @@
 package dev.cdelmonte.collecting.distribution;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -11,33 +12,39 @@ import java.util.UUID;
 public class DistributionRun {
 
     private final UUID id;
-    private String status;          // PENDING, RUNNING, COMPLETED, FAILED
+    private final SettlementPeriod settlementPeriod;
+    private DistributionStatus status;
+    private BigDecimal totalDistributed;
 
-    // S5: Latent SettlementPeriod — represented as raw LocalDate pair
-    //     instead of a dedicated SettlementPeriod value object
-    private LocalDate periodStart;
-    private LocalDate periodEnd;
-
-    private double totalDistributed;
-
-    public DistributionRun(UUID id, LocalDate periodStart, LocalDate periodEnd) {
-        this.id = id;
-        this.periodStart = periodStart;
-        this.periodEnd = periodEnd;
-        this.status = "PENDING";
-        this.totalDistributed = 0.0;
+    public DistributionRun(UUID id, SettlementPeriod settlementPeriod) {
+        this.id = Objects.requireNonNull(id, "id must not be null");
+        this.settlementPeriod = Objects.requireNonNull(settlementPeriod, "settlementPeriod must not be null");
+        this.status = DistributionStatus.PENDING;
+        this.totalDistributed = BigDecimal.ZERO;
     }
 
     public UUID getId() { return id; }
-    public String getStatus() { return status; }
-    public LocalDate getPeriodStart() { return periodStart; }
-    public LocalDate getPeriodEnd() { return periodEnd; }
-    public double getTotalDistributed() { return totalDistributed; }
+    public SettlementPeriod getSettlementPeriod() { return settlementPeriod; }
+    public DistributionStatus getStatus() { return status; }
+    public BigDecimal getTotalDistributed() { return totalDistributed; }
 
-    public void setStatus(String status) { this.status = status; }
-    public void setPeriodStart(LocalDate periodStart) { this.periodStart = periodStart; }
-    public void setPeriodEnd(LocalDate periodEnd) { this.periodEnd = periodEnd; }
-    public void setTotalDistributed(double totalDistributed) {
-        this.totalDistributed = totalDistributed;
+    public void setStatus(DistributionStatus status) {
+        this.status = Objects.requireNonNull(status, "status must not be null");
+    }
+
+    public void setTotalDistributed(BigDecimal totalDistributed) {
+        this.totalDistributed = Objects.requireNonNull(totalDistributed, "totalDistributed must not be null");
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DistributionRun other)) return false;
+        return Objects.equals(id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

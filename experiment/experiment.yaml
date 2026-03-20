@@ -1,16 +1,19 @@
 # Experiment configuration v4.1
-# Three agents, two prompt sets, domain context control
+# Phase 1: vary agent, fix model (Claude Sonnet)
+# Phase 2: fix agent (OpenCode), vary model
 
 iterations: 10
 max_fix_attempts: 3
 
-# Prompt sets
 prompt_sets:
   A: prompts_neutral.txt
   B: prompts_stress.txt
 
 runs:
-  # --- Phase 1: Isolate the agent (same model where possible) ---
+  # ── Phase 1: Isolate the agent ──
+  # All use Claude Sonnet (default MODEL)
+  # Claude Code uses Max subscription (free), others use API key
+
   # Neutral prompts (Set A)
   - agent: claude_code
     type: erosion
@@ -47,4 +50,61 @@ runs:
   - agent: claude_code
     type: control_a
     prompt_set: A
+    runs: 3
+
+  # ── Phase 2: Isolate the model ──
+  # All use OpenCode as agent, vary the model via MODEL env var
+  # Run with: MODEL=<model> ./experiment/run_all.sh --phase 2
+
+  # Claude Sonnet (cloud) — same as Phase 1 opencode runs, reuse if available
+  - agent: opencode
+    type: erosion
+    prompt_set: A
+    model: claude-sonnet
+    phase: 2
+    runs: 3
+
+  - agent: opencode
+    type: erosion
+    prompt_set: B
+    model: claude-sonnet
+    phase: 2
+    runs: 3
+
+  # GPT-4o (cloud)
+  - agent: opencode
+    type: erosion
+    prompt_set: A
+    model: gpt-4o
+    phase: 2
+    runs: 3
+
+  - agent: opencode
+    type: erosion
+    prompt_set: B
+    model: gpt-4o
+    phase: 2
+    runs: 3
+
+  # Qwen3-Coder 30B (local, Ollama)
+  - agent: opencode
+    type: erosion
+    prompt_set: A
+    model: qwen3-coder
+    phase: 2
+    runs: 3
+
+  - agent: opencode
+    type: erosion
+    prompt_set: B
+    model: qwen3-coder
+    phase: 2
+    runs: 3
+
+  # Control: OpenCode + Qwen3 with domain context
+  - agent: opencode
+    type: control_a
+    prompt_set: A
+    model: qwen3-coder
+    phase: 2
     runs: 3

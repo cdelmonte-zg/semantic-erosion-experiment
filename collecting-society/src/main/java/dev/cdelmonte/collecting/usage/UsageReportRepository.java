@@ -1,6 +1,7 @@
 package dev.cdelmonte.collecting.usage;
 
-import java.time.LocalDate;
+import dev.cdelmonte.collecting.distribution.SettlementPeriod;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,7 +15,7 @@ public interface UsageReportRepository {
 
     List<UsageReport> findByMusicalWorkId(UUID musicalWorkId);
 
-    List<UsageReport> findByReportingPeriod(LocalDate start, LocalDate end);
+    List<UsageReport> findByReportingPeriod(SettlementPeriod period);
 
     List<UsageReport> findAll();
 
