@@ -1,0 +1,50 @@
+# Experiment configuration v4.1
+# Three agents, two prompt sets, domain context control
+
+iterations: 10
+max_fix_attempts: 3
+
+# Prompt sets
+prompt_sets:
+  A: prompts_neutral.txt
+  B: prompts_stress.txt
+
+runs:
+  # --- Phase 1: Isolate the agent (same model where possible) ---
+  # Neutral prompts (Set A)
+  - agent: claude_code
+    type: erosion
+    prompt_set: A
+    runs: 3
+
+  - agent: opencode
+    type: erosion
+    prompt_set: A
+    runs: 3
+
+  - agent: openhands
+    type: erosion
+    prompt_set: A
+    runs: 3
+
+  # Stress prompts (Set B)
+  - agent: claude_code
+    type: erosion
+    prompt_set: B
+    runs: 3
+
+  - agent: opencode
+    type: erosion
+    prompt_set: B
+    runs: 3
+
+  - agent: openhands
+    type: erosion
+    prompt_set: B
+    runs: 3
+
+  # Control: Claude Code with domain context (Set A only)
+  - agent: claude_code
+    type: control_a
+    prompt_set: A
+    runs: 3

@@ -1,0 +1,8 @@
+.venv/
+.glossary_backup.yaml
+*.log
+__pycache__/
+*.pyc
+Modelfile
+results/
+logs/

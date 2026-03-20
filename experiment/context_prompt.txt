@@ -1,0 +1,14 @@
+CONTEXT: This project implements a collecting society rights distribution system. The following domain terms are defined in GLOSSARY.yaml and MUST be preserved in all identifiers. Do not rename, generalize, or replace these terms:
+
+- RightsHolder (aggregate root)
+- MusicalWork (aggregate root)
+- DistributionRun (aggregate root)
+- UsageReport (aggregate root)
+- SettlementPeriod (value object — extract from raw dates)
+- TariffClass (value object — extract from switch/case)
+- RightsShare (value object — extract from data clump)
+- DistributionKey (value object — extract from inline logic)
+- ExploitationType (enum)
+- RoyaltyStatement (entity)
+
+These terms represent the Ubiquitous Language agreed with domain experts. When extracting new classes, use these names, not generic equivalents.

@@ -1,0 +1,103 @@
+bounded_context: rights-distribution
+version: "4.1"
+description: >
+  Ubiquitous Language for a collecting society rights distribution system.
+  Terms verified against GEMA/CISAC/BIEM domain practice.
+  Correct refactoring should make latent terms EMERGE as explicit types
+  without renaming materialized terms.
+
+terms:
+  # ── Materialized terms (6) — exist as Java types at t=0 ──
+
+  - domain_term: RightsHolder
+    ddd_role: aggregate_root
+    weight: 1.0
+    initial_state: materialized
+    definition: >
+      Legal entity holding exploitation rights for musical works.
+      Identified by IPI number. CMO/CISAC standard term.
+    reject: [User, Account, Owner, Stakeholder, Member, Person]
+
+  - domain_term: MusicalWork
+    ddd_role: aggregate_root
+    weight: 1.0
+    initial_state: materialized
+    definition: >
+      Registered copyrighted composition identified by ISWC code (ISO 15707).
+    reject: [Asset, Track, Content, MediaItem, Song, Resource, Item]
+
+  - domain_term: DistributionRun
+    ddd_role: aggregate_root
+    weight: 1.0
+    initial_state: materialized
+    definition: >
+      One execution of the periodic royalty distribution process.
+      GEMA: Verteilung/Ausschuettungslauf.
+    reject: [Job, BatchProcess, Pipeline, Task, Execution]
+
+  - domain_term: UsageReport
+    ddd_role: aggregate_root
+    weight: 1.0
+    initial_state: materialized
+    definition: >
+      Formal document from a licensee reporting exploitation of works.
+      Part of CRD/CIS-Net data exchange standard.
+    reject: [ActivityLog, UsageEvent, PlayRecord, EventLog, Entry]
+
+  - domain_term: ExploitationType
+    ddd_role: enum
+    weight: 0.6
+    initial_state: materialized
+    definition: >
+      Legal classification of musical work usage (Verwertungsart).
+    reject: [UsageType, ContentType, PlaybackMode, Category, Kind]
+
+  - domain_term: RoyaltyStatement
+    ddd_role: entity
+    weight: 0.6
+    initial_state: materialized
+    definition: >
+      Per-rights-holder accounting document from a distribution run.
+      GEMA: Abrechnung.
+    reject: [PayoutSummary, SettlementResult, Invoice, PaymentRecord]
+
+  # ── Latent terms (4) — should EMERGE through correct refactoring ──
+
+  - domain_term: SettlementPeriod
+    ddd_role: value_object
+    weight: 0.8
+    initial_state: latent
+    smell: S3
+    definition: >
+      Contractual accounting interval (Abrechnungszeitraum)
+      with regulatory implications.
+    reject: [DateRange, TimePeriod, AccountingInterval, TimeSpan, Interval]
+
+  - domain_term: TariffClass
+    ddd_role: value_object
+    weight: 0.8
+    initial_state: latent
+    smell: S8
+    definition: >
+      Regulatory rate category from GEMA tariff structure (Tarifordnung).
+    reject: [PriceCategory, RateTier, FeeLevel, PricingRule, RateConfig]
+
+  - domain_term: RightsShare
+    ddd_role: value_object
+    weight: 0.8
+    initial_state: latent
+    smell: S6
+    definition: >
+      A rights holder's fractional share in a musical work, including
+      percentage, role, and territorial scope.
+    reject: [OwnershipInfo, ShareData, StakeRecord, ParticipantInfo]
+
+  - domain_term: DistributionKey
+    ddd_role: value_object
+    weight: 0.8
+    initial_state: latent
+    smell: S1
+    definition: >
+      Algorithm determining how collected royalties are allocated among
+      eligible rights holders. GEMA: Verteilungsschluessel.
+    reject: [EligibilityRule, SelectionCriteria, FilterStrategy, AllocationRule]
