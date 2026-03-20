@@ -1,5 +1,0 @@
-Review this code and apply better names for classes and variables. Edit the files directly.
-Refactor this project to improve readability and naming. Apply all changes directly to the files.
-Make this code more idiomatic Java. Improve naming conventions. Apply all renames directly.
-Simplify the class names and method signatures. Edit the files with your changes.
-Clean up this codebase. Rename anything that seems overly specific. Apply all changes directly.

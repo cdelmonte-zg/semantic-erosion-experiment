@@ -26,7 +26,7 @@ def load_results(results_dir: str, agent: str, run: int = 1) -> list[dict]:
     for json_file in sorted(agent_dir.glob("iteration-*.json")):
         data = json.loads(json_file.read_text())
         # Skip failed/skipped iterations without DTD data
-        if "iteration" in data and "dtd_10" in data:
+        if "iteration" in data and "preservation_score" in data:
             results.append(data)
 
     results.sort(key=lambda r: r["iteration"])
@@ -49,7 +49,7 @@ def load_all_runs(results_dir: str, agent: str, max_runs: int = 3) -> list[list[
         for json_file in sorted(agent_dir.glob("iteration-*.json")):
             data = json.loads(json_file.read_text())
             # Skip failed/skipped iterations without DTD data
-            if "iteration" in data and "dtd_10" in data:
+            if "iteration" in data and "preservation_score" in data:
                 run_results.append(data)
 
         if run_results:
@@ -60,7 +60,7 @@ def load_all_runs(results_dir: str, agent: str, max_runs: int = 3) -> list[list[
 
 
 def plot_erosion_curves(results_dir: str, agents: list[str],
-                        metric: str = "dtd_10", output: str = "erosion_curves.png"):
+                        metric: str = "preservation_score", output: str = "erosion_curves.png"):
     """Chart 1: Erosion curves — DTD over iterations for each agent."""
     fig, ax = plt.subplots(figsize=(10, 6))
 
@@ -105,8 +105,8 @@ def plot_erosion_curves(results_dir: str, agents: list[str],
                             alpha=0.15, color=colors[i % len(colors)])
 
     ax.set_xlabel("Iteration", fontsize=12)
-    ax.set_ylabel(f"Domain Term Density ({metric.upper()})", fontsize=12)
-    ax.set_title("Semantic Erosion: Domain Term Density Over Iterations", fontsize=14)
+    ax.set_ylabel(f"Preservation Score ({metric})", fontsize=12)
+    ax.set_title("Semantic Erosion: Preservation Score Over Iterations", fontsize=14)
     ax.set_ylim(-0.05, 1.05)
     ax.set_xticks(range(0, 11))
     ax.legend(fontsize=10, loc="lower left")
@@ -135,27 +135,36 @@ def plot_distance_heatmap(results_dir: str, agent: str,
     n_terms = len(all_terms)
     n_iterations = len(results)
 
-    # Build distance matrix
+    # v4.1 states: MATERIALIZED, LATENT, CORRECTLY_MATERIALIZED, DEGRADED, ERODED, DISAPPEARED
+    STATE_TO_VALUE = {
+        "MATERIALIZED": 0,
+        "CORRECTLY_MATERIALIZED": 1,
+        "LATENT": 2,
+        "DEGRADED": 3,
+        "ERODED": 4,
+        "DISAPPEARED": 5,
+    }
+
+    # Build state matrix
     matrix = np.zeros((n_terms, n_iterations))
 
     for iter_idx, result in enumerate(results):
         for term_idx, term in enumerate(all_terms):
             term_data = result["terms"].get(term, {})
-            status = term_data.get("status", "disappeared")
-            if status == "preserved":
-                matrix[term_idx, iter_idx] = 0.0
-            elif status == "eroded":
-                matrix[term_idx, iter_idx] = term_data.get("distance", 0.5)
-            else:  # disappeared
-                matrix[term_idx, iter_idx] = 1.0
+            status = term_data.get("status", "DISAPPEARED").upper()
+            matrix[term_idx, iter_idx] = STATE_TO_VALUE.get(status, 5)
 
     fig, ax = plt.subplots(figsize=(12, 8))
 
-    # Custom colormap: green (preserved) -> yellow (partial) -> red (eroded)
-    cmap = mcolors.LinearSegmentedColormap.from_list(
-        "erosion", ["#2ecc71", "#f1c40f", "#e74c3c"])
+    # Custom colormap for v4.1 states:
+    #   MATERIALIZED=green, CORRECTLY_MATERIALIZED=dark green,
+    #   LATENT=gray, DEGRADED=yellow, ERODED=orange, DISAPPEARED=red
+    state_colors = ["#2ecc71", "#1a9641", "#999999", "#f1c40f", "#e67e22", "#e74c3c"]
+    cmap = mcolors.ListedColormap(state_colors)
+    bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+    norm = mcolors.BoundaryNorm(bounds, cmap.N)
 
-    im = ax.imshow(matrix, aspect="auto", cmap=cmap, vmin=0, vmax=1)
+    im = ax.imshow(matrix, aspect="auto", cmap=cmap, norm=norm)
 
     ax.set_xticks(range(n_iterations))
     ax.set_xticklabels([r["iteration"] for r in results])
@@ -166,19 +175,24 @@ def plot_distance_heatmap(results_dir: str, agent: str,
     ax.set_ylabel("Domain Term", fontsize=12)
     ax.set_title(f"Semantic Distance Heatmap — {agent}", fontsize=14)
 
+    # Reverse lookup for labels
+    VALUE_TO_STATE = {v: k for k, v in STATE_TO_VALUE.items()}
+
     # Add text annotations
     for i in range(n_terms):
         for j in range(n_iterations):
-            val = matrix[i, j]
-            text_color = "white" if val > 0.6 else "black"
+            val = int(matrix[i, j])
+            text_color = "white" if val >= 4 else "black"
             term_data = results[j]["terms"].get(all_terms[i], {})
             current = term_data.get("current_name", "?")
             if current and len(current) > 15:
                 current = current[:14] + "..."
-            ax.text(j, i, f"{current}\n{val:.2f}",
+            state_label = VALUE_TO_STATE.get(val, "?")
+            ax.text(j, i, f"{current}\n{state_label}",
                     ha="center", va="center", fontsize=6, color=text_color)
 
-    plt.colorbar(im, ax=ax, label="Semantic Distance", shrink=0.8)
+    cbar = plt.colorbar(im, ax=ax, label="Term State", shrink=0.8, ticks=range(6))
+    cbar.ax.set_yticklabels(list(STATE_TO_VALUE.keys()), fontsize=8)
     plt.tight_layout()
     plt.savefig(output, dpi=150)
     print(f"Distance heatmap saved to {output}")
@@ -193,8 +207,9 @@ def main():
                         default=["claude_code", "copilot", "aider_local",
                                  "control_a_claude", "control_a_aider"],
                         help="Agent names to include in erosion curves")
-    parser.add_argument("--metric", choices=["dtd_10", "dtd_18"], default="dtd_10",
-                        help="DTD metric for erosion curves")
+    parser.add_argument("--metric", choices=["preservation_score", "dtd_10", "dtd_18"],
+                        default="preservation_score",
+                        help="Metric for erosion curves")
     parser.add_argument("--output-dir", default="article/figures",
                         help="Output directory for figures")
     parser.add_argument("--heatmap-agent", default=None,

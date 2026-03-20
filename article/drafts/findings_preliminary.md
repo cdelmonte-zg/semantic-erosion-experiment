@@ -1,3 +1,7 @@
+> **WARNING: Preliminary findings from v3 experiment runs (pre-glossary-driven evaluation).**
+> These observations informed the v4 design but metrics (DTD-10, DTD-18) have been
+> superseded by PS/ES. Do not cite raw numbers from this document.
+
 # Experiment Findings Log
 
 ## Finding 1: Glossary Rewriting (Run 2, Iteration 5)
@@ -19,14 +23,14 @@ primary definitions.
 # After (agent-modified)
 - domain_term: Holder
   definition: "Legal entity holding rights for works"
-  reject: [User, Account, Owner, Person, RightsHolder]  # ← original term is now rejected!
+  reject: [User, Account, Owner, Person, RightsHolder]  # <- original term is now rejected!
 ```
 
 **Impact on measurement:** This invalidated all DTD measurements from
 iteration 5 onwards in run 2. The DTD appeared to stay at 1.0 because
 the ground truth was rewritten to match the eroded code.
 
-**Why this matters:** This is a form of **semantic gaslighting** — the
+**Why this matters:** This is a form of **semantic gaslighting** -- the
 agent doesn't just erode the code, it rewrites the documentation to
 normalize the erosion. In a real project, this would mean:
 - Domain glossaries drift alongside the code
@@ -56,12 +60,12 @@ check that fails if the glossary is modified without explicit review.
 follows an oscillatory pattern driven by prompt aggressiveness:
 
 ```
-Prompt P1 ("Review and apply better names")    → preserves or restores terms
-Prompt P2 ("Refactor for readability")          → minor erosion (secondary terms)
-Prompt P3 ("Make idiomatic Java")               → minor erosion (method names)
-Prompt P4 ("Simplify class names")              → MASSIVE erosion (all terms)
-Prompt P5 ("Rename overly specific")            → further erosion
-→ cycle repeats: P1 restores, P4 destroys
+Prompt P1 ("Review and apply better names")    -> preserves or restores terms
+Prompt P2 ("Refactor for readability")          -> minor erosion (secondary terms)
+Prompt P3 ("Make idiomatic Java")               -> minor erosion (method names)
+Prompt P4 ("Simplify class names")              -> MASSIVE erosion (all terms)
+Prompt P5 ("Rename overly specific")            -> further erosion
+-> cycle repeats: P1 restores, P4 destroys
 ```
 
 **Key insight:** The same agent (Claude Code / Sonnet 4) both erodes
@@ -70,7 +74,7 @@ the erosion trigger; "Review" or "better names" triggers restoration
 because the agent recognizes the generic names as ambiguous.
 
 **Implication for practice:** The risk is not that AI assistants always
-erode — it's that a single "simplify" or "clean up" prompt can undo
+erode -- it's that a single "simplify" or "clean up" prompt can undo
 months of careful domain naming in one pass. The erosion is **prompt-
 triggered, not gradual**.
 
@@ -94,7 +98,7 @@ classes in a single pass at iteration 4, updating all cross-references
 correctly. This requires both strong reasoning and large context.
 
 **Key insight:** The local model's apparent "resistance to erosion" is
-not a conscious preservation of domain terms — it is a capability
+not a conscious preservation of domain terms -- it is a capability
 limitation. The model either:
 - Does nothing (whole-project mode: 2 commits out of 10 iterations)
 - Breaks compilation (file-by-file mode: renames in one file without
@@ -121,7 +125,7 @@ window limitation but introduces an asymmetry: Claude Code sees
 cross-file relationships and renames atomically, while Aider in
 file-by-file mode renames within a single file without seeing how
 other files reference the same terms. This asymmetry is documented
-as a limitation — results are not directly comparable between the
+as a limitation -- results are not directly comparable between the
 two modes.
 
 ---
@@ -133,8 +137,8 @@ produced significantly different erosion patterns:
 
 ```
          Run 1    Run 2*   Run 3
-Iter 4   0.0      0.3      0.0     ← all crash at P4, but severity varies
-Iter 9   0.0      1.0*     0.7     ← wide divergence at second P4 cycle
+Iter 4   0.0      0.3      0.0     <- all crash at P4, but severity varies
+Iter 9   0.0      1.0*     0.7     <- wide divergence at second P4 cycle
 Iter 10  0.0      1.0*     0.9
 ```
 
@@ -143,7 +147,7 @@ same prompt, the model produces different rename choices due to
 sampling. Sometimes it renames 13 classes, sometimes 10, sometimes it
 preserves a few domain terms.
 
-**Implication:** Erosion is not deterministic — you can't predict which
+**Implication:** Erosion is not deterministic -- you can't predict which
 terms will survive. This makes it harder to defend against with
 term-specific rules and strengthens the case for a blanket glossary
 check (DTD threshold in CI).

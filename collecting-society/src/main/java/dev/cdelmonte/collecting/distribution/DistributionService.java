@@ -116,6 +116,9 @@ public class DistributionService {
         // --- Step 3: Calculate royalties per rights holder ---
         // S8: Comment hiding the fact that this should be a separate method or class
         Map<UUID, RoyaltyStatement> statementsByHolder = new HashMap<>();
+        // S6: Parallel maps — additional data clump fields for RightsShare
+        Map<UUID, String> workToRole = new HashMap<>();
+        Map<UUID, String> workToTerritory = new HashMap<>();
         double totalDistributed = 0.0;
 
         for (UsageReport report : filteredReports) {
@@ -130,6 +133,12 @@ public class DistributionService {
             //     that should be a RightsShare value object
             UUID holderId = report.getRightsHolderId();
             double sharePercentage = report.getRightsSharePercentage();
+            String holderRole = report.getRightsHolderRole();
+            String territory = report.getShareTerritory();
+
+            // S6: populate parallel maps for the data clump
+            workToRole.put(report.getMusicalWorkId(), holderRole);
+            workToTerritory.put(report.getMusicalWorkId(), territory);
 
             // S8: resolveClaimShares — apply the rights holder's share percentage
             double holderRoyalty = grossRoyalty * sharePercentage;
@@ -170,12 +179,14 @@ public class DistributionService {
         switch (exploitationType) {
             case BROADCAST:
                 return 0.09;
-            case LIVE_PERFORMANCE:
+            case PUBLIC_PERFORMANCE:
                 return 0.12;
             case MECHANICAL_REPRODUCTION:
                 return 0.065;
-            case ONLINE_STREAMING:
+            case DIGITAL_STREAMING:
                 return 0.04;
+            case SYNCHRONIZATION:
+                return 0.05;
             default:
                 throw new IllegalArgumentException(
                         "Unknown exploitation type: " + exploitationType);

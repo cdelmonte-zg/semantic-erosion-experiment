@@ -56,79 +56,54 @@ RUN_COUNT=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(len(json.load
 for idx in $(seq 0 $((RUN_COUNT - 1))); do
   AGENT=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['agent'])")
   TYPE=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['type'])")
+  PROMPT_SET=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['prompt_set'])")
   NUM_RUNS=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['runs'])")
 
   for run_num in $(seq 1 "$NUM_RUNS"); do
-    # Determine results directory
+    # Determine results directory using standardized paths
     if [ "$TYPE" == "erosion" ]; then
       SCRIPT="./experiment/run_experiment.sh"
-      if [ "$run_num" -gt 1 ]; then
-        RESULTS_DIR="results/${AGENT}/run-${run_num}"
-      else
-        RESULTS_DIR="results/${AGENT}"
-      fi
+      RESULTS_DIR="results/${AGENT}/${PROMPT_SET}/run-${run_num}"
     elif [ "$TYPE" == "control_a" ]; then
       SCRIPT="./experiment/run_control_a.sh"
-      if [ "$run_num" -gt 1 ]; then
-        RESULTS_DIR="results/control_a_${AGENT}/run-${run_num}"
-      else
-        RESULTS_DIR="results/control_a_${AGENT}"
-      fi
+      RESULTS_DIR="results/control_a/${AGENT}/${PROMPT_SET}/run-${run_num}"
     fi
 
-    # Check if already complete — validate results contain dtd_10 key
+    # Check if already complete — validate results contain preservation_score key
     RESULT_COUNT=0
     if [ -d "$RESULTS_DIR" ]; then
-      RESULT_COUNT=$(find "$RESULTS_DIR" -name "iteration-*.json" -exec python3 -c "import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if 'dtd_10' in d else 1)" {} \; -print 2>/dev/null | wc -l)
+      RESULT_COUNT=$(find "$RESULTS_DIR" -name "iteration-*.json" -exec python3 -c "import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if 'preservation_score' in d else 1)" {} \; -print 2>/dev/null | wc -l)
     fi
 
     if [ "$FORCE" == "false" ] && [ "$RESULT_COUNT" -ge "$ITERATIONS" ]; then
-      log "SKIP: ${TYPE}/${AGENT} run ${run_num} — already has ${RESULT_COUNT} results"
+      log "SKIP: ${TYPE}/${AGENT}/${PROMPT_SET} run ${run_num} — already has ${RESULT_COUNT} results"
       SKIPPED=$((SKIPPED + 1))
       continue
     fi
 
-    RUN_LABEL="${TYPE}/${AGENT} run ${run_num}/${NUM_RUNS}"
+    RUN_LABEL="${TYPE}/${AGENT}/${PROMPT_SET} run ${run_num}/${NUM_RUNS}"
     log "--- ${RUN_LABEL} ---"
 
     if [ "$DRY_RUN" == "true" ]; then
-      log "  DRY RUN: would execute ${SCRIPT} ${AGENT} ${ITERATIONS} ${run_num}"
+      log "  DRY RUN: would execute ${SCRIPT} ${AGENT} ${PROMPT_SET} ${ITERATIONS} ${run_num}"
       continue
     fi
 
-    # Execute
-    if [ "$TYPE" == "erosion" ]; then
-      if $SCRIPT "$AGENT" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"; then
-        COMPLETED=$((COMPLETED + 1))
-        log "${RUN_LABEL} — COMPLETED"
-      else
-        FAILED=$((FAILED + 1))
-        log "${RUN_LABEL} — FAILED (exit code $?)"
-      fi
-    elif [ "$TYPE" == "control_a" ]; then
-      if $SCRIPT "$AGENT" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"; then
-        COMPLETED=$((COMPLETED + 1))
-        log "${RUN_LABEL} — COMPLETED"
-      else
-        FAILED=$((FAILED + 1))
-        log "${RUN_LABEL} — FAILED (exit code $?)"
-      fi
+    # Execute — both erosion and control_a have same signature: <agent> <prompt_set> <iterations> <run_number>
+    if $SCRIPT "$AGENT" "$PROMPT_SET" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"; then
+      COMPLETED=$((COMPLETED + 1))
+      log "${RUN_LABEL} — COMPLETED"
+    else
+      FAILED=$((FAILED + 1))
+      log "${RUN_LABEL} — FAILED (exit code $?)"
     fi
 
     log ""
   done
 done
 
-# Generate charts
-log "--- Generating charts ---"
-python experiment/plot_erosion.py \
-  --results-dir results/ \
-  --agents claude_code aider_local control_a_claude_code \
-  --output-dir article/figures 2>&1 | tee -a "$LOG_FILE"
-
 log ""
 log "=== Experiment complete ==="
 log "Completed: ${COMPLETED} | Skipped: ${SKIPPED} | Failed: ${FAILED} | Total: ${TOTAL_RUNS}"
 log "Results:   results/"
-log "Charts:    article/figures/"
 log "Log:       ${LOG_FILE}"

@@ -66,36 +66,49 @@ LOCATION_WEIGHTS = {
 TYPE_CATEGORIES = {"class_name", "record_name", "enum_name", "interface_name"}
 
 
+SUBSTRING_PENALTY = 0.7
+
+
 def find_term_location_weight(domain_term: str,
-                               by_category: dict[str, set[str]]) -> tuple[float, str, str]:
+                               by_category: dict[str, set[str]]) -> tuple[float, str, str, str]:
     """Find the highest location weight where a domain term appears.
 
-    Returns (weight, location_category, found_as).
+    Exact matches receive the full location_weight.
+    Substring matches (term contained within a larger identifier) receive
+    location_weight * SUBSTRING_PENALTY (0.7).
+
+    Returns (effective_weight, location_category, found_as, match_type).
+    match_type is "exact", "substring", or None.
     """
     best_weight = 0.0
     best_category = None
     best_match = None
+    best_match_type = None
 
     for category, identifiers in by_category.items():
-        weight = LOCATION_WEIGHTS.get(category, 0.0)
-        if weight <= best_weight:
-            continue
+        base_weight = LOCATION_WEIGHTS.get(category, 0.0)
 
-        # Exact match
+        # Exact match — full weight
         if domain_term in identifiers:
-            best_weight = weight
-            best_category = category
-            best_match = domain_term
+            effective = base_weight
+            if effective > best_weight:
+                best_weight = effective
+                best_category = category
+                best_match = domain_term
+                best_match_type = "exact"
 
-        # Substring match in type names only
+        # Substring match in type names only — penalized weight
         if category in TYPE_CATEGORIES:
             for ident in identifiers:
-                if domain_term in ident and weight > best_weight:
-                    best_weight = weight
-                    best_category = category
-                    best_match = ident
+                if domain_term != ident and domain_term in ident:
+                    effective = base_weight * SUBSTRING_PENALTY
+                    if effective > best_weight:
+                        best_weight = effective
+                        best_category = category
+                        best_match = ident
+                        best_match_type = "substring"
 
-    return best_weight, best_category, best_match
+    return best_weight, best_category, best_match, best_match_type
 
 
 def find_erosion_in_types(reject_list: list[str],
@@ -144,7 +157,7 @@ def measure(glossary_path: str, source_root: str,
         weight = entry.get("weight", 1.0)
 
         # Find where the term appears
-        loc_weight, loc_category, found_as = find_term_location_weight(
+        loc_weight, loc_category, found_as, match_type = find_term_location_weight(
             domain_term, by_category)
 
         if initial_state == "materialized":
@@ -152,31 +165,33 @@ def measure(glossary_path: str, source_root: str,
             ps_denominator += weight
 
             if loc_weight >= 1.0:
-                # Still a type name → MATERIALIZED
+                # Still a type name -> MATERIALIZED
                 results[domain_term] = {
                     "state": "MATERIALIZED",
                     "current_name": found_as,
                     "location": loc_category,
                     "location_weight": loc_weight,
+                    "match_type": match_type,
                     "initial_state": initial_state,
                     "weight": weight,
                 }
                 ps_numerator += weight * loc_weight
 
             elif loc_weight > 0:
-                # Lost from types but survives in methods/fields → DEGRADED
+                # Lost from types but survives in methods/fields -> DEGRADED
                 results[domain_term] = {
                     "state": "DEGRADED",
                     "current_name": found_as,
                     "location": loc_category,
                     "location_weight": loc_weight,
+                    "match_type": match_type,
                     "initial_state": initial_state,
                     "weight": weight,
                 }
                 ps_numerator += weight * loc_weight
 
             else:
-                # Not found as domain term — check for erosion
+                # Not found as domain term -- check for erosion
                 eroded_to = find_erosion_in_types(reject_list, by_category)
                 if eroded_to:
                     distance = 0.0
@@ -186,6 +201,7 @@ def measure(glossary_path: str, source_root: str,
                         "state": "ERODED",
                         "current_name": eroded_to,
                         "distance": distance,
+                        "match_type": None,
                         "initial_state": initial_state,
                         "weight": weight,
                     }
@@ -193,6 +209,7 @@ def measure(glossary_path: str, source_root: str,
                     results[domain_term] = {
                         "state": "DISAPPEARED",
                         "current_name": None,
+                        "match_type": None,
                         "initial_state": initial_state,
                         "weight": weight,
                     }
@@ -201,7 +218,7 @@ def measure(glossary_path: str, source_root: str,
             latent_total += 1
 
             if loc_weight >= 1.0:
-                # Latent term appeared as a type → CORRECTLY_MATERIALIZED
+                # Latent term appeared as a type -> CORRECTLY_MATERIALIZED
                 latent_extracted += 1
                 es_denominator += weight
                 es_numerator += weight * 1.0
@@ -209,6 +226,7 @@ def measure(glossary_path: str, source_root: str,
                     "state": "CORRECTLY_MATERIALIZED",
                     "current_name": found_as,
                     "location": loc_category,
+                    "match_type": match_type,
                     "initial_state": initial_state,
                     "weight": weight,
                 }
@@ -217,7 +235,7 @@ def measure(glossary_path: str, source_root: str,
                 # Check if a generic equivalent was extracted instead
                 eroded_to = find_erosion_in_types(reject_list, by_category)
                 if eroded_to:
-                    # Extracted with wrong name → ERODED
+                    # Extracted with wrong name -> ERODED
                     latent_extracted += 1
                     es_denominator += weight
                     es_numerator += 0.0  # eroded emergence = 0
@@ -228,24 +246,28 @@ def measure(glossary_path: str, source_root: str,
                         "state": "ERODED",
                         "current_name": eroded_to,
                         "distance": distance,
+                        "match_type": None,
                         "initial_state": initial_state,
                         "weight": weight,
                     }
                 else:
-                    # Still latent — not extracted at all
+                    # Still latent -- not extracted at all
                     results[domain_term] = {
                         "state": "LATENT",
                         "current_name": None,
+                        "match_type": None,
                         "initial_state": initial_state,
                         "weight": weight,
                     }
 
     ps = round(ps_numerator / ps_denominator, 4) if ps_denominator > 0 else 1.0
     es = round(es_numerator / es_denominator, 4) if es_denominator > 0 else None
+    extraction_ratio = round(latent_extracted / latent_total, 4) if latent_total > 0 else 0.0
 
     return {
         "preservation_score": ps,
         "emergence_score": es,
+        "extraction_ratio": extraction_ratio,
         "latent_extracted": latent_extracted,
         "latent_total": latent_total,
         "materialized_count": materialized_count,

@@ -29,6 +29,8 @@ public class UsageReport {
     //     referencing a RightsShare or using the MusicalWork's data
     private final UUID rightsHolderId;
     private final double rightsSharePercentage;
+    private final String rightsHolderRole;   // e.g., COMPOSER, PUBLISHER, ARRANGER
+    private final String shareTerritory;     // e.g., "DE", "WORLDWIDE"
 
     private final String licensee;
 
@@ -36,6 +38,7 @@ public class UsageReport {
                        int playCount, double revenue,
                        LocalDate reportingPeriodStart, LocalDate reportingPeriodEnd,
                        UUID rightsHolderId, double rightsSharePercentage,
+                       String rightsHolderRole, String shareTerritory,
                        String licensee) {
         this.id = id;
         this.musicalWorkId = musicalWorkId;
@@ -46,7 +49,24 @@ public class UsageReport {
         this.reportingPeriodEnd = reportingPeriodEnd;
         this.rightsHolderId = rightsHolderId;
         this.rightsSharePercentage = rightsSharePercentage;
+        this.rightsHolderRole = rightsHolderRole;
+        this.shareTerritory = shareTerritory;
         this.licensee = licensee;
+    }
+
+    /**
+     * Factory method — creates a UsageReport from raw data.
+     */
+    public static UsageReport of(UUID id, UUID musicalWorkId, ExploitationType exploitationType,
+                                  int playCount, double revenue,
+                                  LocalDate reportingPeriodStart, LocalDate reportingPeriodEnd,
+                                  UUID rightsHolderId, double rightsSharePercentage,
+                                  String rightsHolderRole, String shareTerritory,
+                                  String licensee) {
+        return new UsageReport(id, musicalWorkId, exploitationType,
+                playCount, revenue, reportingPeriodStart, reportingPeriodEnd,
+                rightsHolderId, rightsSharePercentage, rightsHolderRole, shareTerritory,
+                licensee);
     }
 
     public UUID getId() { return id; }
@@ -58,5 +78,7 @@ public class UsageReport {
     public LocalDate getReportingPeriodEnd() { return reportingPeriodEnd; }
     public UUID getRightsHolderId() { return rightsHolderId; }
     public double getRightsSharePercentage() { return rightsSharePercentage; }
+    public String getRightsHolderRole() { return rightsHolderRole; }
+    public String getShareTerritory() { return shareTerritory; }
     public String getLicensee() { return licensee; }
 }

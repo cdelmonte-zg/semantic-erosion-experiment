@@ -34,24 +34,13 @@ else
 fi
 mapfile -t BASE_PROMPTS < "$PROMPT_FILE"
 
-# Output directories
-AGENT_LABEL="control_a_${AGENT}_${PROMPT_SET}"
-if [ "$RUN_NUMBER" -gt 1 ]; then
-  RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT_LABEL}/run-${RUN_NUMBER}"
-else
-  RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT_LABEL}"
-fi
-LOG_DIR="${PROJECT_ROOT}/logs/${AGENT_LABEL}"
-if [ "$RUN_NUMBER" -gt 1 ]; then
-  LOG_DIR="${LOG_DIR}/run-${RUN_NUMBER}"
-fi
+# Output directories — standardized path: results/control_a/<agent>/<prompt_set>/run-<n>/
+RESULTS_DIR="${PROJECT_ROOT}/results/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+LOG_DIR="${PROJECT_ROOT}/logs/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
 
 mkdir -p "$RESULTS_DIR" "$LOG_DIR"
 
-BRANCH="experiment/${AGENT_LABEL}"
-if [ "$RUN_NUMBER" -gt 1 ]; then
-  BRANCH="${BRANCH}/run-${RUN_NUMBER}"
-fi
+BRANCH="experiment/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
 
 echo "=== Semantic Erosion — Control A (with domain context) ==="
 echo "Agent:      ${AGENT}"
@@ -209,7 +198,7 @@ FEOF
   fi
 
   git add -A
-  git commit -m "iteration-${i}-control_a-${AGENT}-${PROMPT_SET}" || true
+  git commit -m "iteration-${i}-control_a-${AGENT}-${PROMPT_SET}-run${RUN_NUMBER}" || true
 
   # Verify GLOSSARY
   CURRENT_HASH=$(sha256sum "$GLOSSARY" | awk '{print $1}')
