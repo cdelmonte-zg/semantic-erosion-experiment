@@ -204,8 +204,8 @@ def main():
     parser.add_argument("--results-dir", default="results",
                         help="Path to results directory")
     parser.add_argument("--agents", nargs="+",
-                        default=["claude_code", "copilot", "aider_local",
-                                 "control_a_claude", "control_a_aider"],
+                        default=["claude_code/A", "opencode/A", "openhands/A",
+                                 "control_a/claude_code/A"],
                         help="Agent names to include in erosion curves")
     parser.add_argument("--metric", choices=["preservation_score", "dtd_10", "dtd_18"],
                         default="preservation_score",

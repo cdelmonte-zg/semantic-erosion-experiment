@@ -140,7 +140,7 @@ public class DistributionService {
             workToRole.put(report.getMusicalWorkId(), holderRole);
             workToTerritory.put(report.getMusicalWorkId(), territory);
 
-            // S8: resolveClaimShares — apply the rights holder's share percentage
+            // S8: resolveRightsShares — apply the rights holder's share percentage
             double holderRoyalty = grossRoyalty * sharePercentage;
 
             // Build or update the royalty statement for this holder
@@ -198,7 +198,7 @@ public class DistributionService {
      * that should be a RightsShare value object.
      * S3: Long Parameter List.
      */
-    public double resolveClaimShares(UUID musicalWorkId, UUID rightsHolderId,
+    public double resolveRightsShares(UUID musicalWorkId, UUID rightsHolderId,
                                      double rightsSharePercentage, double grossAmount) {
         // S4: Feature Envy — accessing MusicalWork to validate share
         MusicalWork work = musicalWorkRepository.findById(musicalWorkId)
