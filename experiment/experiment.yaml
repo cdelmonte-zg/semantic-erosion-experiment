@@ -1,6 +1,8 @@
 # Experiment configuration v4.1
-# Phase 1: vary agent, fix model (Claude Sonnet)
+# Phase 1: vary agent, fix model (Claude Sonnet 4.6)
 # Phase 2: fix agent (OpenCode), vary model
+# Claude Code: 3 runs (free, Max subscription) for variance analysis
+# OpenCode/OpenHands: 1 run (API, cost-constrained)
 
 iterations: 10
 max_fix_attempts: 3
@@ -11,100 +13,95 @@ prompt_sets:
 
 runs:
   # ── Phase 1: Isolate the agent ──
-  # All use Claude Sonnet (default MODEL)
-  # Claude Code uses Max subscription (free), others use API key
+  # All use Claude Sonnet 4.6
 
-  # Neutral prompts (Set A)
+  # Claude Code — 3 runs (free via Max subscription)
   - agent: claude_code
+    type: erosion
+    prompt_set: A
+    runs: 3
+
+  - agent: claude_code
+    type: erosion
+    prompt_set: B
+    runs: 3
+
+  # OpenCode — already paid for 3 runs Set A
+  - agent: opencode
     type: erosion
     prompt_set: A
     runs: 3
 
   - agent: opencode
     type: erosion
-    prompt_set: A
-    runs: 3
+    prompt_set: B
+    runs: 1
 
+  # OpenHands — 1 run each (~$7/run)
   - agent: openhands
     type: erosion
     prompt_set: A
-    runs: 3
-
-  # Stress prompts (Set B)
-  - agent: claude_code
-    type: erosion
-    prompt_set: B
-    runs: 3
-
-  - agent: opencode
-    type: erosion
-    prompt_set: B
-    runs: 3
+    runs: 1
 
   - agent: openhands
     type: erosion
     prompt_set: B
-    runs: 3
+    runs: 1
 
-  # Control: Claude Code with domain context (Set A only)
+  # Control: Claude Code with domain context (free)
   - agent: claude_code
     type: control_a
     prompt_set: A
     runs: 3
 
   # ── Phase 2: Isolate the model ──
-  # All use OpenCode as agent, vary the model via MODEL env var
-  # Run with: MODEL=<model> ./experiment/run_all.sh --phase 2
+  # All use OpenCode as agent, vary model via MODEL env var
 
-  # Claude Sonnet (cloud) — same as Phase 1 opencode runs, reuse if available
+  # Claude Sonnet — reuses Phase 1 opencode results (no extra cost)
+  # (opencode A run 1 and opencode B run 1 already cover this)
+
+  # GPT-4o (cloud, ~$5/run)
   - agent: opencode
     type: erosion
     prompt_set: A
-    model: claude-sonnet
+    model: gpt-5.4
     phase: 2
-    runs: 3
+    runs: 1
 
   - agent: opencode
     type: erosion
     prompt_set: B
-    model: claude-sonnet
+    model: gpt-5.4
     phase: 2
-    runs: 3
+    runs: 1
 
-  # GPT-4o (cloud)
-  - agent: opencode
-    type: erosion
-    prompt_set: A
-    model: gpt-4o
-    phase: 2
-    runs: 3
-
-  - agent: opencode
-    type: erosion
-    prompt_set: B
-    model: gpt-4o
-    phase: 2
-    runs: 3
-
-  # Qwen3-Coder 30B (local, Ollama)
+  # Qwen3-Coder 30B (local, free)
   - agent: opencode
     type: erosion
     prompt_set: A
     model: qwen3-coder
     phase: 2
-    runs: 3
+    runs: 1
 
   - agent: opencode
     type: erosion
     prompt_set: B
     model: qwen3-coder
     phase: 2
-    runs: 3
+    runs: 1
 
-  # Control: OpenCode + Qwen3 with domain context
+  # Control: OpenCode + GPT-5.4 with domain context (~$7)
+  - agent: opencode
+    type: control_a
+    prompt_set: A
+    model: gpt-5.4
+    phase: 2
+    runs: 1
+
+  # Control: OpenCode + Qwen3 with domain context (free)
   - agent: opencode
     type: control_a
     prompt_set: A
     model: qwen3-coder
     phase: 2
-    runs: 3
+    runs: 1

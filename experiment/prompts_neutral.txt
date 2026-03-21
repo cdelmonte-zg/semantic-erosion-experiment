@@ -1,5 +1,5 @@
 Refactor this project to improve readability.
-Simplify the method signatures where possible.
-Review this code and suggest improvements.
+Simplify the method signatures in this project where possible.
+Review the code in this project and apply improvements.
 Clean up this codebase following Java best practices.
 Reduce unnecessary complexity in this project.

@@ -41,13 +41,18 @@ else
 fi
 mapfile -t BASE_PROMPTS < "$PROMPT_FILE"
 
-# Output directories — standardized path: results/control_a/<agent>/<prompt_set>/run-<n>/
-RESULTS_DIR="${PROJECT_ROOT}/results/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-LOG_DIR="${PROJECT_ROOT}/logs/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+# Output directories — include MODEL in path for Phase 2
+if [ -n "${MODEL:-}" ]; then
+  RESULTS_DIR="${PROJECT_ROOT}/results/control_a/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  LOG_DIR="${PROJECT_ROOT}/logs/control_a/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  BRANCH="experiment/control_a/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+else
+  RESULTS_DIR="${PROJECT_ROOT}/results/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  LOG_DIR="${PROJECT_ROOT}/logs/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  BRANCH="experiment/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+fi
 
 mkdir -p "$RESULTS_DIR" "$LOG_DIR"
-
-BRANCH="experiment/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
 
 echo "=== Semantic Erosion — Control A (with domain context) ==="
 echo "Agent:      ${AGENT}"
@@ -143,42 +148,68 @@ fi
 MODEL="${MODEL:-claude-sonnet-4-6}"
 
 # Agent runner (same as run_experiment.sh)
+AGENT_TIMEOUT=1200  # 10 minutes max per iteration
+
+BATCH_SUFFIX="Do not ask questions or request clarification. Apply all changes directly to the files."
+
 run_agent() {
   local PROMPT="$1"
   local LOG_FILE="$2"
 
+  if [ "$AGENT" != "claude_code" ]; then
+    PROMPT="${PROMPT} ${BATCH_SUFFIX}"
+  fi
+
   if [ "$AGENT" == "claude_code" ]; then
-    env -u ANTHROPIC_API_KEY claude --dangerously-skip-permissions -p "$PROMPT" \
+    env -u ANTHROPIC_API_KEY timeout "$AGENT_TIMEOUT" claude --dangerously-skip-permissions -p "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
   elif [ "$AGENT" == "opencode" ]; then
     local OC_MODEL OC_KEY
     case "$MODEL" in
       claude-sonnet*|anthropic*)  OC_MODEL="anthropic/claude-sonnet-4-6"; OC_KEY="$ANTHROPIC_API_KEY" ;;
-      gpt-4o*|openai*)            OC_MODEL="openai/gpt-4o"; OC_KEY="$OPENAI_API_KEY" ;;
+      gpt-5.4*|openai*)            OC_MODEL="openai/gpt-5.4"; OC_KEY="$OPENAI_API_KEY" ;;
       qwen*|ollama*)              OC_MODEL="ollama/qwen3-coder-experiment"; OC_KEY="none" ;;
       gemini*)                    OC_MODEL="google/gemini-2.5-flash"; OC_KEY="$GEMINI_API_KEY" ;;
       *)                          OC_MODEL="anthropic/claude-sonnet-4-6"; OC_KEY="$ANTHROPIC_API_KEY" ;;
     esac
-    cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
+    if [[ "$OC_MODEL" == ollama/* ]]; then
+      local OLLAMA_MODEL_NAME="${OC_MODEL#ollama/}"
+      cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
+{
+  "model": "$OC_MODEL",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama",
+      "options": {"baseURL": "http://localhost:11434/v1"},
+      "models": {"$OLLAMA_MODEL_NAME": {"name": "$OLLAMA_MODEL_NAME"}}
+    }
+  }
+}
+OCEOF
+    else
+      cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
 {"model": "$OC_MODEL"}
 OCEOF
+    fi
     ANTHROPIC_API_KEY="$OC_KEY" OPENAI_API_KEY="$OC_KEY" \
-    opencode run "$PROMPT" \
+    timeout "$AGENT_TIMEOUT" opencode run "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
   elif [ "$AGENT" == "openhands" ]; then
     local OH_MODEL OH_KEY
     case "$MODEL" in
       claude-sonnet*|anthropic*)  OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
-      gpt-4o*|openai*)            OH_MODEL="openai/gpt-4o"; OH_KEY="$OPENAI_API_KEY" ;;
+      gpt-5.4*|openai*)            OH_MODEL="openai/gpt-5.4"; OH_KEY="$OPENAI_API_KEY" ;;
       qwen*|ollama*)              OH_MODEL="ollama_chat/qwen3-coder-experiment"; OH_KEY="none" ;;
       gemini*)                    OH_MODEL="gemini/gemini-2.5-flash"; OH_KEY="$GEMINI_API_KEY" ;;
       *)                          OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
     esac
     LLM_API_KEY="$OH_KEY" \
     LLM_MODEL="$OH_MODEL" \
-    openhands --headless --override-with-envs -t "$PROMPT" \
+    local OH_PROMPT="The Java project is in the current working directory ($(pwd)). The source code is in src/main/java/. ${PROMPT}"
+    timeout "$AGENT_TIMEOUT" openhands --headless --override-with-envs -t "$OH_PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
   else
@@ -204,6 +235,9 @@ ${CONTEXT}"
   echo "--- Iteration ${i}/${ITERATIONS} ---"
   echo "Prompt: ${BASE_PROMPT} + [CONTEXT]"
   echo ""
+
+  # Clean agent state to prevent session accumulation
+  rm -rf "${COLLECTING_SOCIETY}/.opencode/" 2>/dev/null
 
   AGENT_EXIT=0
   run_agent "$PROMPT" "$ITERATION_LOG" || AGENT_EXIT=$?

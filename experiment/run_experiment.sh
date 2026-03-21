@@ -19,7 +19,8 @@ PROMPT_SET_EARLY="${2:-unknown}"
 RUN_NUMBER_EARLY="${4:-1}"
 
 # Global debug log for live debugging
-DEBUG_LOG="/tmp/semantic-erosion-${AGENT}-${PROMPT_SET_EARLY}-run${RUN_NUMBER_EARLY}-$(date +%Y%m%d_%H%M%S).log"
+MODEL_TAG="${MODEL:+${MODEL}-}"
+DEBUG_LOG="/tmp/semantic-erosion-${AGENT}-${MODEL_TAG}${PROMPT_SET_EARLY}-run${RUN_NUMBER_EARLY}-$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "$DEBUG_LOG") 2>&1
 echo "Debug log: $DEBUG_LOG"
 PROMPT_SET="${2:?Usage: run_experiment.sh <agent> <A|B> [iterations] [run_number]}"
@@ -44,14 +45,20 @@ else
 fi
 mapfile -t PROMPTS < "$PROMPT_FILE"
 
-# Output directories — standardized path: results/<agent>/<prompt_set>/run-<n>/
-RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-LOG_DIR="${PROJECT_ROOT}/logs/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+# Output directories — include MODEL in path for Phase 2
+# Phase 1 (no MODEL): results/<agent>/<prompt_set>/run-<n>/
+# Phase 2 (MODEL set): results/<agent>/<model>/<prompt_set>/run-<n>/
+if [ -n "${MODEL:-}" ]; then
+  RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  LOG_DIR="${PROJECT_ROOT}/logs/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  BRANCH="experiment/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+else
+  RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  LOG_DIR="${PROJECT_ROOT}/logs/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  BRANCH="experiment/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+fi
 
 mkdir -p "$RESULTS_DIR" "$LOG_DIR"
-
-# Branch name
-BRANCH="experiment/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
 
 echo "=== Semantic Erosion Experiment ==="
 echo "Agent:      ${AGENT}"
@@ -161,14 +168,22 @@ fi
 MODEL="${MODEL:-claude-sonnet-4-6}"
 
 # --- Agent runner function ---
+AGENT_TIMEOUT=1200  # 10 minutes max per iteration
+
+BATCH_SUFFIX="Do not ask questions or request clarification. Apply all changes directly to the files."
+
 run_agent() {
   local PROMPT="$1"
   local LOG_FILE="$2"
 
+  # For non-interactive agents, append instruction to not ask questions
+  if [ "$AGENT" != "claude_code" ]; then
+    PROMPT="${PROMPT} ${BATCH_SUFFIX}"
+  fi
+
   if [ "$AGENT" == "claude_code" ]; then
     # Claude Code uses Max subscription — ensure API key is NOT in env
-    # so it doesn't accidentally charge the API budget
-    env -u ANTHROPIC_API_KEY claude --dangerously-skip-permissions -p "$PROMPT" \
+    env -u ANTHROPIC_API_KEY timeout "$AGENT_TIMEOUT" claude --dangerously-skip-permissions -p "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
   elif [ "$AGENT" == "opencode" ]; then
@@ -176,17 +191,34 @@ run_agent() {
     local OC_MODEL OC_KEY
     case "$MODEL" in
       claude-sonnet*|anthropic*)  OC_MODEL="anthropic/claude-sonnet-4-6"; OC_KEY="$ANTHROPIC_API_KEY" ;;
-      gpt-4o*|openai*)            OC_MODEL="openai/gpt-4o"; OC_KEY="$OPENAI_API_KEY" ;;
+      gpt-5.4*|openai*)            OC_MODEL="openai/gpt-5.4"; OC_KEY="$OPENAI_API_KEY" ;;
       qwen*|ollama*)              OC_MODEL="ollama/qwen3-coder-experiment"; OC_KEY="none" ;;
       gemini*)                    OC_MODEL="google/gemini-2.5-flash"; OC_KEY="$GEMINI_API_KEY" ;;
       *)                          OC_MODEL="anthropic/claude-sonnet-4-6"; OC_KEY="$ANTHROPIC_API_KEY" ;;
     esac
     # Write project-level opencode.json to override global config
-    cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
+    if [[ "$OC_MODEL" == ollama/* ]]; then
+      local OLLAMA_MODEL_NAME="${OC_MODEL#ollama/}"
+      cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
+{
+  "model": "$OC_MODEL",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama",
+      "options": {"baseURL": "http://localhost:11434/v1"},
+      "models": {"$OLLAMA_MODEL_NAME": {"name": "$OLLAMA_MODEL_NAME"}}
+    }
+  }
+}
+OCEOF
+    else
+      cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
 {"model": "$OC_MODEL"}
 OCEOF
+    fi
     ANTHROPIC_API_KEY="$OC_KEY" OPENAI_API_KEY="$OC_KEY" \
-    opencode run "$PROMPT" \
+    timeout "$AGENT_TIMEOUT" opencode run "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
   elif [ "$AGENT" == "openhands" ]; then
@@ -194,14 +226,16 @@ OCEOF
     local OH_MODEL OH_KEY
     case "$MODEL" in
       claude-sonnet*|anthropic*)  OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
-      gpt-4o*|openai*)            OH_MODEL="openai/gpt-4o"; OH_KEY="$OPENAI_API_KEY" ;;
+      gpt-5.4*|openai*)            OH_MODEL="openai/gpt-5.4"; OH_KEY="$OPENAI_API_KEY" ;;
       qwen*|ollama*)              OH_MODEL="ollama_chat/qwen3-coder-experiment"; OH_KEY="none" ;;
       gemini*)                    OH_MODEL="gemini/gemini-2.5-flash"; OH_KEY="$GEMINI_API_KEY" ;;
       *)                          OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
     esac
+    # OpenHands needs explicit directory context — it doesn't explore the filesystem by default
+    local OH_PROMPT="The Java project is in the current working directory ($(pwd)). The source code is in src/main/java/. ${PROMPT}"
     LLM_API_KEY="$OH_KEY" \
     LLM_MODEL="$OH_MODEL" \
-    openhands --headless --override-with-envs -t "$PROMPT" \
+    timeout "$AGENT_TIMEOUT" openhands --headless --override-with-envs -t "$OH_PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
   else
@@ -225,6 +259,9 @@ for i in $(seq 1 "$ITERATIONS"); do
   echo "--- Iteration ${i}/${ITERATIONS} ---"
   echo "Prompt: ${PROMPT}"
   echo ""
+
+  # --- Clean agent state to prevent session accumulation ---
+  rm -rf "${COLLECTING_SOCIETY}/.opencode/" 2>/dev/null
 
   # --- Run agent ---
   AGENT_EXIT=0
@@ -337,6 +374,65 @@ FEOF
   git add src/ pom.xml
   git commit -m "iteration-${i}-${AGENT}-${PROMPT_SET}-run${RUN_NUMBER}" || true
 
+  # --- Analyze changes made by the agent ---
+  CHANGE_ANALYSIS="${LOG_DIR}/changes-iteration-${i}.json"
+  python3 -c "
+import subprocess, json
+
+# Check if HEAD~1 exists (first iteration may not have a parent)
+has_parent = subprocess.run(['git', 'rev-parse', '--verify', 'HEAD~1'], capture_output=True).returncode == 0
+if not has_parent:
+    # First iteration: diff against v0 tag instead
+    diff_ref = 'v0'
+else:
+    diff_ref = 'HEAD~1'
+
+diff_stat = subprocess.run(['git', 'diff', '--stat', diff_ref, 'HEAD'], capture_output=True, text=True).stdout.strip()
+name_status = subprocess.run(['git', 'diff', '--name-status', diff_ref, 'HEAD'], capture_output=True, text=True).stdout.strip()
+diff_numstat = subprocess.run(['git', 'diff', '--numstat', diff_ref, 'HEAD'], capture_output=True, text=True).stdout.strip()
+
+files_added = []
+files_deleted = []
+files_modified = []
+files_renamed = []
+insertions = 0
+deletions = 0
+
+for line in name_status.split('\n'):
+    if not line.strip(): continue
+    parts = line.split('\t')
+    status = parts[0]
+    if status.startswith('A'): files_added.append(parts[1])
+    elif status.startswith('D'): files_deleted.append(parts[1])
+    elif status.startswith('M'): files_modified.append(parts[1])
+    elif status.startswith('R'): files_renamed.append({'from': parts[1], 'to': parts[2]})
+
+for line in diff_numstat.split('\n'):
+    if not line.strip(): continue
+    parts = line.split('\t')
+    try:
+        insertions += int(parts[0])
+        deletions += int(parts[1])
+    except ValueError:
+        pass
+
+analysis = {
+    'iteration': $i,
+    'files_added': files_added,
+    'files_deleted': files_deleted,
+    'files_modified': files_modified,
+    'files_renamed': files_renamed,
+    'total_files_changed': len(files_added) + len(files_deleted) + len(files_modified) + len(files_renamed),
+    'insertions': insertions,
+    'deletions': deletions,
+}
+
+with open('$CHANGE_ANALYSIS', 'w') as f:
+    json.dump(analysis, f, indent=2)
+
+print(f'  Changes: +{insertions}/-{deletions} in {analysis[\"total_files_changed\"]} files | Added: {len(files_added)} Deleted: {len(files_deleted)} Renamed: {len(files_renamed)}')
+" 2>/dev/null || echo "  (change analysis skipped)"
+
   # --- Verify GLOSSARY before measurement ---
   CURRENT_HASH=$(sha256sum "$GLOSSARY" | awk '{print $1}')
   if [ "$CURRENT_HASH" != "$GLOSSARY_HASH" ]; then
@@ -364,6 +460,13 @@ with open('${ITERATION_RESULT}') as f:
 data['compile_error_count'] = ${COMPILE_ERROR_COUNT}
 data['compile_autofix'] = '${COMPILE_AUTOFIX}'
 data['glossary_tampered'] = True if '${GLOSSARY_TAMPERED}' == 'true' else False
+data['changes_applied'] = 1
+# Inject change analysis if available
+import os
+change_file = '${CHANGE_ANALYSIS}'
+if os.path.exists(change_file):
+    with open(change_file) as cf:
+        data['change_analysis'] = json.load(cf)
 with open('${ITERATION_RESULT}', 'w') as f:
     json.dump(data, f, indent=2)
 "

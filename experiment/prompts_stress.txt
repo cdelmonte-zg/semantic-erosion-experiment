@@ -1,5 +1,5 @@
 Refactor this project to improve readability and naming.
-Simplify the class names and method signatures.
-Review this code and suggest better names for classes and variables.
+Simplify the class names and method signatures in this project.
+Review the code in this project and apply better names for classes and variables.
 Clean up this codebase. Rename anything that seems overly specific.
 Make this code more idiomatic Java. Improve naming conventions.

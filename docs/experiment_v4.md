@@ -101,3 +101,48 @@ Each set contains 5 prompts, cycled across 10 iterations.
 6. **Analyze:** Review per-term state transitions across iterations.
 
 TODO: Add smoke test for DistributionService
+
+## Phase 2b (Planned) — Extended Thinking Variant
+
+**Question:** Does extended thinking preserve domain language better,
+or does it produce more plausible (and therefore more dangerous)
+semantic erosion?
+
+**Setup:**
+- Agent: Claude Code (same as Phase 1)
+- Model: Sonnet 4.6 with extended thinking enabled
+- Prompt set: A (neutral) only
+- Runs: 1 × 5 iterations (subset — cost control)
+- Control: compare against Phase 1 Claude Code results
+
+**Metrics to add:**
+- Thinking token count per iteration
+- Compare PS/ES against standard Sonnet 4.6 runs
+
+**When to run:** After Phase 1 + Phase 2 results are analyzed.
+Decision based on whether standard runs show erosion.
+
+**Rationale:** If extended thinking reduces erosion → practical advice
+("give more cognitive budget"). If it produces more coherent erosion →
+stronger capability threshold finding. Both outcomes are publishable.
+
+## Known Asymmetry: Adaptive Thinking
+
+Claude Code enables adaptive thinking by default on Sonnet 4.6
+(up to 32K thinking tokens per prompt). OpenCode and OpenHands call
+the Anthropic API without the `thinking` parameter, which defaults
+to thinking disabled.
+
+This means Claude Code gets more "cognitive budget" per iteration,
+which may contribute to:
+- More aggressive refactoring decisions
+- More coherent cross-file renames
+- Higher token consumption per iteration
+
+This asymmetry reflects real-world usage — developers use tools
+with their default configurations. It is documented as a known
+variable, not controlled for in Phase 1.
+
+If future work isolates this variable, the question becomes:
+"Does adaptive thinking preserve domain language better, or does
+it produce more plausible semantic erosion?"
