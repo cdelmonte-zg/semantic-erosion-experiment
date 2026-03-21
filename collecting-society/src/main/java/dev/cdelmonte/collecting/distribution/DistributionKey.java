@@ -3,51 +3,56 @@ package dev.cdelmonte.collecting.distribution;
 import dev.cdelmonte.collecting.musicalwork.ExploitationType;
 import dev.cdelmonte.collecting.usage.UsageReport;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 /**
- * Algorithm determining how collected royalties are allocated among eligible rights holders.
- * GEMA: Verteilungsschluessel.
- * Encapsulates the filtering criteria applied to usage reports before royalty calculation.
+ * Algorithm determining which usage reports are eligible for inclusion in a
+ * distribution run (GEMA: Verteilungsschluessel).
+ *
+ * A DistributionKey encapsulates the three eligibility conditions that were
+ * previously scattered as anonymous boolean checks inside calculateRoyalties():
+ * exploitation type filter, minimum revenue threshold, and settlement period containment.
  */
 public final class DistributionKey {
 
-    private final Set<ExploitationType> eligibleTypes;  // empty set means all types are eligible
-    private final BigDecimal minimumRevenue;
+    private final List<ExploitationType> allowedTypes;  // null means all types are allowed
+    private final double minimumRevenue;
+    private final SettlementPeriod settlementPeriod;
 
-    public DistributionKey(List<ExploitationType> eligibleTypes, BigDecimal minimumRevenue) {
-        this.eligibleTypes = Set.copyOf(Objects.requireNonNull(eligibleTypes, "eligibleTypes must not be null"));
-        this.minimumRevenue = Objects.requireNonNull(minimumRevenue, "minimumRevenue must not be null");
-    }
-
-    /** A DistributionKey that includes all exploitation types with no minimum revenue threshold. */
-    public static DistributionKey unrestricted() {
-        return new DistributionKey(List.of(), BigDecimal.ZERO);
-    }
-
-    public Set<ExploitationType> getEligibleTypes() { return eligibleTypes; }
-    public BigDecimal getMinimumRevenue() { return minimumRevenue; }
-
-    public boolean isEligible(UsageReport report) {
-        if (!eligibleTypes.isEmpty() && !eligibleTypes.contains(report.getExploitationType())) {
-            return false;
+    public DistributionKey(List<ExploitationType> allowedTypes,
+                           double minimumRevenue,
+                           SettlementPeriod settlementPeriod) {
+        if (settlementPeriod == null) {
+            throw new IllegalArgumentException("DistributionKey requires a SettlementPeriod");
         }
-        return report.getRevenue().compareTo(minimumRevenue) >= 0;
+        this.allowedTypes = allowedTypes;
+        this.minimumRevenue = minimumRevenue;
+        this.settlementPeriod = settlementPeriod;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DistributionKey other)) return false;
-        return Objects.equals(eligibleTypes, other.eligibleTypes)
-                && Objects.equals(minimumRevenue, other.minimumRevenue);
+    /**
+     * Returns true if the usage report qualifies for inclusion in the distribution run
+     * governed by this key.
+     */
+    public boolean matches(UsageReport report) {
+        boolean matchesType = (allowedTypes == null)
+                || allowedTypes.contains(report.getExploitationType());
+
+        boolean meetsThreshold = report.getRevenue() >= minimumRevenue;
+
+        boolean withinPeriod = settlementPeriod.contains(report.getReportingPeriod());
+
+        return matchesType && meetsThreshold && withinPeriod;
     }
 
+    public SettlementPeriod getSettlementPeriod() { return settlementPeriod; }
+    public double getMinimumRevenue() { return minimumRevenue; }
+    public List<ExploitationType> getAllowedTypes() { return allowedTypes; }
+
     @Override
-    public int hashCode() {
-        return Objects.hash(eligibleTypes, minimumRevenue);
+    public String toString() {
+        return "DistributionKey[period=" + settlementPeriod
+                + ", minRevenue=" + minimumRevenue
+                + ", types=" + (allowedTypes == null ? "ALL" : allowedTypes) + "]";
     }
 }

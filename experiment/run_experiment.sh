@@ -15,6 +15,13 @@
 set -euo pipefail
 
 AGENT="${1:?Usage: run_experiment.sh <claude_code|opencode|openhands> <A|B> [iterations] [run_number]}"
+PROMPT_SET_EARLY="${2:-unknown}"
+RUN_NUMBER_EARLY="${4:-1}"
+
+# Global debug log for live debugging
+DEBUG_LOG="/tmp/semantic-erosion-${AGENT}-${PROMPT_SET_EARLY}-run${RUN_NUMBER_EARLY}-$(date +%Y%m%d_%H%M%S).log"
+exec > >(tee -a "$DEBUG_LOG") 2>&1
+echo "Debug log: $DEBUG_LOG"
 PROMPT_SET="${2:?Usage: run_experiment.sh <agent> <A|B> [iterations] [run_number]}"
 ITERATIONS="${3:-10}"
 RUN_NUMBER="${4:-1}"
@@ -58,6 +65,14 @@ echo "==================================="
 # --- Setup ---
 cd "$COLLECTING_SOCIETY"
 
+# Lockfile to prevent parallel runs on same repo
+LOCKFILE="/tmp/semantic-erosion-collecting-society.lock"
+if ! mkdir "$LOCKFILE" 2>/dev/null; then
+  echo "ERROR: Another experiment is running (lockfile: $LOCKFILE). Wait or remove it."
+  exit 1
+fi
+trap "rmdir '$LOCKFILE' 2>/dev/null" EXIT
+
 # Load API keys from .env and persistent config
 # Keys are loaded into shell vars but NOT exported globally —
 # Claude Code must use Max subscription, not the API key.
@@ -71,19 +86,54 @@ export GOOGLE_GENERATIVE_AI_API_KEY="${GEMINI_API_KEY:-}"
 # ANTHROPIC_API_KEY and OPENAI_API_KEY are passed explicitly
 # to OpenCode/OpenHands inside run_agent(), not exported globally.
 
-# Reset source code to baseline
-if git rev-parse "v0" >/dev/null 2>&1; then
-  git checkout -B "$BRANCH" 2>/dev/null || true
-  rm -rf src/
-  git checkout v0 -- src/ pom.xml
-  git add -A && git reset HEAD --quiet
-else
-  echo "ERROR: Tag 'v0' not found."
-  exit 1
+# --- Resume support: check for existing results ---
+LAST_COMPLETED=0
+if [ -d "$RESULTS_DIR" ]; then
+  for f in "$RESULTS_DIR"/iteration-*.json; do
+    [ -f "$f" ] || continue
+    iter_num=$(python3 -c "import json; d=json.load(open('$f')); print(d.get('iteration', -1))" 2>/dev/null)
+    status=$(python3 -c "import json; d=json.load(open('$f')); print(d.get('status', 'ok'))" 2>/dev/null)
+    if [ "$status" == "compilation_failure" ] || [ "$status" == "skipped_due_to_prior_failure" ]; then
+      echo "Run previously terminated at iteration $iter_num (${status}). Cannot resume."
+      exit 0
+    fi
+    has_ps=$(python3 -c "import json; d=json.load(open('$f')); print('yes' if 'preservation_score' in d else 'no')" 2>/dev/null)
+    if [ "$has_ps" == "yes" ] && [ "$iter_num" -gt "$LAST_COMPLETED" ] 2>/dev/null; then
+      LAST_COMPLETED=$iter_num
+    fi
+  done
 fi
 
-echo ""
-echo "Baseline checked out. Starting iterations..."
+if [ "$LAST_COMPLETED" -gt 0 ]; then
+  echo "RESUMING from iteration $((LAST_COMPLETED + 1)) (found $LAST_COMPLETED completed iterations)"
+  # Try to checkout the branch with previous work
+  if git rev-parse "$BRANCH" >/dev/null 2>&1; then
+    if ! git checkout "$BRANCH" 2>/dev/null; then
+      echo "WARNING: Could not checkout branch $BRANCH, starting fresh"
+      LAST_COMPLETED=0
+    fi
+  else
+    echo "WARNING: Branch $BRANCH not found, starting from baseline"
+    LAST_COMPLETED=0
+  fi
+fi
+
+if [ "$LAST_COMPLETED" -eq 0 ]; then
+  # Fresh start from baseline
+  if git rev-parse "v0" >/dev/null 2>&1; then
+    git checkout -B "$BRANCH" v0 2>/dev/null || true
+    rm -rf src/
+    git checkout v0 -- src/ pom.xml
+    git add -A && git reset HEAD --quiet
+  else
+    echo "ERROR: Tag 'v0' not found."
+    exit 1
+  fi
+  echo ""
+  echo "Baseline checked out. Starting iterations..."
+else
+  echo "Resuming on branch $BRANCH..."
+fi
 echo ""
 
 # --- Backup GLOSSARY.yaml (immutable ground truth) ---
@@ -91,22 +141,24 @@ GLOSSARY_BACKUP="${PROJECT_ROOT}/.glossary_backup.yaml"
 cp "$GLOSSARY" "$GLOSSARY_BACKUP"
 GLOSSARY_HASH=$(sha256sum "$GLOSSARY" | awk '{print $1}')
 
-# --- Baseline measurement (iteration 0) ---
-source "$VENV"
-python "${PROJECT_ROOT}/experiment/measure_fidelity.py" \
-  --glossary "$GLOSSARY" \
-  --source "$SOURCE" \
-  --agent "$AGENT" \
-  --prompt-set "$PROMPT_SET" \
-  --iteration 0 \
-  --run "$RUN_NUMBER" \
-  --output "$RESULTS_DIR/iteration-0.json" \
-  --no-distance
+# --- Baseline measurement (iteration 0) — skip if resuming ---
+if [ "$LAST_COMPLETED" -eq 0 ]; then
+  source "$VENV"
+  python "${PROJECT_ROOT}/experiment/measure_fidelity.py" \
+    --glossary "$GLOSSARY" \
+    --source "$SOURCE" \
+    --agent "$AGENT" \
+    --prompt-set "$PROMPT_SET" \
+    --iteration 0 \
+    --run "$RUN_NUMBER" \
+    --output "$RESULTS_DIR/iteration-0.json" \
+    --no-distance
+fi
 
 # --- Model selection ---
 # Default: Claude Sonnet (Phase 1 — same model across all agents)
 # Override with MODEL env var for Phase 2 (vary model, fixed agent)
-MODEL="${MODEL:-claude-sonnet-4-20250514}"
+MODEL="${MODEL:-claude-sonnet-4-6}"
 
 # --- Agent runner function ---
 run_agent() {
@@ -123,25 +175,29 @@ run_agent() {
     # OpenCode: pass API key and model explicitly
     local OC_MODEL OC_KEY
     case "$MODEL" in
-      claude-sonnet*|anthropic*)  OC_MODEL="anthropic/claude-sonnet-4-20250514"; OC_KEY="$ANTHROPIC_API_KEY" ;;
+      claude-sonnet*|anthropic*)  OC_MODEL="anthropic/claude-sonnet-4-6"; OC_KEY="$ANTHROPIC_API_KEY" ;;
       gpt-4o*|openai*)            OC_MODEL="openai/gpt-4o"; OC_KEY="$OPENAI_API_KEY" ;;
       qwen*|ollama*)              OC_MODEL="ollama/qwen3-coder-experiment"; OC_KEY="none" ;;
       gemini*)                    OC_MODEL="google/gemini-2.5-flash"; OC_KEY="$GEMINI_API_KEY" ;;
-      *)                          OC_MODEL="anthropic/claude-sonnet-4-20250514"; OC_KEY="$ANTHROPIC_API_KEY" ;;
+      *)                          OC_MODEL="anthropic/claude-sonnet-4-6"; OC_KEY="$ANTHROPIC_API_KEY" ;;
     esac
+    # Write project-level opencode.json to override global config
+    cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
+{"model": "$OC_MODEL"}
+OCEOF
     ANTHROPIC_API_KEY="$OC_KEY" OPENAI_API_KEY="$OC_KEY" \
-    OPENCODE_MODEL="$OC_MODEL" opencode run "$PROMPT" \
+    opencode run "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
   elif [ "$AGENT" == "openhands" ]; then
     # OpenHands: pass API key and model via env
     local OH_MODEL OH_KEY
     case "$MODEL" in
-      claude-sonnet*|anthropic*)  OH_MODEL="anthropic/claude-sonnet-4-20250514"; OH_KEY="$ANTHROPIC_API_KEY" ;;
+      claude-sonnet*|anthropic*)  OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
       gpt-4o*|openai*)            OH_MODEL="openai/gpt-4o"; OH_KEY="$OPENAI_API_KEY" ;;
       qwen*|ollama*)              OH_MODEL="ollama_chat/qwen3-coder-experiment"; OH_KEY="none" ;;
       gemini*)                    OH_MODEL="gemini/gemini-2.5-flash"; OH_KEY="$GEMINI_API_KEY" ;;
-      *)                          OH_MODEL="anthropic/claude-sonnet-4-20250514"; OH_KEY="$ANTHROPIC_API_KEY" ;;
+      *)                          OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
     esac
     LLM_API_KEY="$OH_KEY" \
     LLM_MODEL="$OH_MODEL" \
@@ -159,6 +215,12 @@ for i in $(seq 1 "$ITERATIONS"); do
   PROMPT="${PROMPTS[$(( (i - 1) % ${#PROMPTS[@]} ))]}"
   ITERATION_LOG="${LOG_DIR}/iteration-${i}.txt"
   ITERATION_RESULT="${RESULTS_DIR}/iteration-${i}.json"
+
+  # Skip already-completed iterations (resume support)
+  if [ "$i" -le "$LAST_COMPLETED" ]; then
+    echo "--- Iteration ${i}/${ITERATIONS} --- SKIPPING (already completed)"
+    continue
+  fi
 
   echo "--- Iteration ${i}/${ITERATIONS} ---"
   echo "Prompt: ${PROMPT}"
@@ -185,8 +247,28 @@ for i in $(seq 1 "$ITERATIONS"); do
 
   # --- Check if anything changed ---
   if git diff --quiet && git diff --cached --quiet; then
-    echo "No changes in iteration ${i}. Skipping."
-    echo '{"status": "no_changes", "iteration": '"${i}"'}' > "${RESULTS_DIR}/iteration-${i}-skipped.json"
+    echo "No changes in iteration ${i}. Measuring current state."
+    # Agent ran but decided no changes needed — still measure PS/ES
+    source "$VENV"
+    python "${PROJECT_ROOT}/experiment/measure_fidelity.py" \
+      --glossary "$GLOSSARY" \
+      --source "$SOURCE" \
+      --agent "$AGENT" \
+      --prompt-set "$PROMPT_SET" \
+      --iteration "$i" \
+      --run "$RUN_NUMBER" \
+      --output "$ITERATION_RESULT"
+    python3 -c "
+import json
+with open('${ITERATION_RESULT}') as f:
+    data = json.load(f)
+data['changes_applied'] = 0
+data['compile_error_count'] = 0
+data['compile_autofix'] = 'none'
+data['glossary_tampered'] = True if '${GLOSSARY_TAMPERED}' == 'true' else False
+with open('${ITERATION_RESULT}', 'w') as f:
+    json.dump(data, f, indent=2)
+"
     echo ""
     continue
   fi
@@ -252,7 +334,7 @@ FEOF
   fi
 
   # --- Commit ---
-  git add -A
+  git add src/ pom.xml
   git commit -m "iteration-${i}-${AGENT}-${PROMPT_SET}-run${RUN_NUMBER}" || true
 
   # --- Verify GLOSSARY before measurement ---

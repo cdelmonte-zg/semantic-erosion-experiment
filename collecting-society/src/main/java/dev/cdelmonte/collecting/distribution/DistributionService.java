@@ -1,54 +1,81 @@
 package dev.cdelmonte.collecting.distribution;
 
+import dev.cdelmonte.collecting.musicalwork.ExploitationType;
+import dev.cdelmonte.collecting.musicalwork.MusicalWork;
+import dev.cdelmonte.collecting.musicalwork.MusicalWorkRepository;
 import dev.cdelmonte.collecting.rightsholder.RightsHolder;
 import dev.cdelmonte.collecting.rightsholder.RightsHolderRepository;
 import dev.cdelmonte.collecting.usage.UsageReport;
 import dev.cdelmonte.collecting.usage.UsageReportRepository;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * Orchestrates royalty calculation for a distribution run.
- * Loads usage reports for a settlement period, applies tariff rates,
- * and produces royalty statements per rights holder.
+ * Domain service that orchestrates a royalty distribution run.
+ *
+ * The service delegates eligibility filtering to {@link DistributionKey},
+ * tariff rate lookup to {@link TariffClass}, and rights share calculation
+ * to {@link RightsShare}. Each logical step of the pipeline is handled
+ * by a dedicated private method.
  */
 public class DistributionService {
 
     private final DistributionRunRepository distributionRunRepository;
     private final UsageReportRepository usageReportRepository;
+    private final MusicalWorkRepository musicalWorkRepository;
     private final RightsHolderRepository rightsHolderRepository;
 
     public DistributionService(DistributionRunRepository distributionRunRepository,
                                UsageReportRepository usageReportRepository,
+                               MusicalWorkRepository musicalWorkRepository,
                                RightsHolderRepository rightsHolderRepository) {
-        this.distributionRunRepository = Objects.requireNonNull(distributionRunRepository, "distributionRunRepository must not be null");
-        this.usageReportRepository = Objects.requireNonNull(usageReportRepository, "usageReportRepository must not be null");
-        this.rightsHolderRepository = Objects.requireNonNull(rightsHolderRepository, "rightsHolderRepository must not be null");
+        this.distributionRunRepository = distributionRunRepository;
+        this.usageReportRepository = usageReportRepository;
+        this.musicalWorkRepository = musicalWorkRepository;
+        this.rightsHolderRepository = rightsHolderRepository;
     }
 
     /**
-     * Calculates royalties for all qualifying usage reports within the run's period.
+     * Executes a distribution run and returns one royalty statement per rights holder.
      *
-     * @param distributionRunId  the run to execute
-     * @param distributionKey    criteria determining which usage reports are eligible
-     * @param currencyCode       currency for the royalty statements
+     * @param distributionRunId the run to execute
+     * @param distributionKey   eligibility criteria (period, type filter, revenue threshold)
+     * @param currencyCode      currency for the royalty statements
      * @return list of generated royalty statements
      */
-    public List<RoyaltyStatement> calculateRoyalties(
-            UUID distributionRunId,
-            DistributionKey distributionKey,
-            String currencyCode) {
+    public List<RoyaltyStatement> calculateRoyalties(UUID distributionRunId,
+                                                     DistributionKey distributionKey,
+                                                     String currencyCode) {
+        DistributionRun run = loadAndStartRun(distributionRunId, distributionKey);
 
-        Objects.requireNonNull(distributionRunId, "distributionRunId must not be null");
-        Objects.requireNonNull(distributionKey, "distributionKey must not be null");
-        Objects.requireNonNull(currencyCode, "currencyCode must not be null");
+        List<UsageReport> eligibleReports = filterEligibleReports(distributionKey);
 
+        Map<UUID, RoyaltyStatement> statementsByHolder =
+                computeStatements(eligibleReports, distributionRunId, currencyCode);
+
+        finalizeRun(run, statementsByHolder);
+
+        return new ArrayList<>(statementsByHolder.values());
+    }
+
+    /**
+     * Convenience method that executes a distribution run for the given period
+     * with default parameters: all exploitation types, no minimum revenue, EUR currency.
+     */
+    public List<RoyaltyStatement> executeDistribution(UUID distributionRunId,
+                                                      SettlementPeriod settlementPeriod) {
+        DistributionKey defaultKey = new DistributionKey(null, 0.0, settlementPeriod);
+        return calculateRoyalties(distributionRunId, defaultKey, "EUR");
+    }
+
+    // ── Pipeline steps ────────────────────────────────────────────────────────
+
+    private DistributionRun loadAndStartRun(UUID distributionRunId,
+                                            DistributionKey distributionKey) {
         DistributionRun run = distributionRunRepository.findById(distributionRunId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "DistributionRun not found: " + distributionRunId));
@@ -59,47 +86,89 @@ public class DistributionService {
         }
 
         run.setStatus(DistributionStatus.RUNNING);
+        run.setSettlementPeriod(distributionKey.getSettlementPeriod());
         distributionRunRepository.save(run);
+        return run;
+    }
 
-        List<UsageReport> eligibleReports = usageReportRepository
-                .findByReportingPeriod(run.getSettlementPeriod())
-                .stream()
-                .filter(distributionKey::isEligible)
-                .toList();
+    private List<UsageReport> filterEligibleReports(DistributionKey distributionKey) {
+        List<UsageReport> allReports = usageReportRepository.findBySettlementPeriod(
+                distributionKey.getSettlementPeriod());
 
-        Map<UUID, String> holderNames = rightsHolderRepository.findAll().stream()
-                .collect(Collectors.toMap(RightsHolder::getId, RightsHolder::getName));
+        List<UsageReport> eligible = new ArrayList<>();
+        for (UsageReport report : allReports) {
+            if (distributionKey.matches(report)) {
+                eligible.add(report);
+            }
+        }
+        return eligible;
+    }
 
+    private Map<UUID, RoyaltyStatement> computeStatements(List<UsageReport> reports,
+                                                          UUID distributionRunId,
+                                                          String currencyCode) {
         Map<UUID, RoyaltyStatement> statementsByHolder = new HashMap<>();
-        BigDecimal totalDistributed = BigDecimal.ZERO;
 
-        for (UsageReport report : eligibleReports) {
-            BigDecimal holderRoyalty = report.getRevenue()
-                    .multiply(report.getExploitationType().tariffRate())
-                    .multiply(report.getRightsShare().getPercentage());
+        for (UsageReport report : reports) {
+            TariffClass tariff = TariffClass.forExploitationType(report.getExploitationType());
+            double grossRoyalty = report.getRevenue() * tariff.rate();
 
-            UUID holderId = report.getRightsHolderId();
-            RoyaltyStatement statement = statementsByHolder.computeIfAbsent(holderId, id -> {
-                String holderName = holderNames.getOrDefault(id, "Unknown");
-                return new RoyaltyStatement(UUID.randomUUID(), distributionRunId, id, holderName, currencyCode);
-            });
+            RightsShare share = report.getRightsShare();
+            double holderRoyalty = share.applyTo(grossRoyalty);
+            UUID holderId = share.getHolderId();
+
+            RoyaltyStatement statement = statementsByHolder.computeIfAbsent(holderId,
+                    id -> createStatement(id, distributionRunId, currencyCode));
 
             statement.addAmount(holderRoyalty);
-            totalDistributed = totalDistributed.add(holderRoyalty);
         }
 
+        return statementsByHolder;
+    }
+
+    private RoyaltyStatement createStatement(UUID holderId, UUID distributionRunId,
+                                             String currencyCode) {
+        String holderName = rightsHolderRepository.findById(holderId)
+                .map(RightsHolder::getName)
+                .orElse("Unknown");
+        return new RoyaltyStatement(UUID.randomUUID(), distributionRunId,
+                holderId, holderName, currencyCode);
+    }
+
+    private void finalizeRun(DistributionRun run,
+                             Map<UUID, RoyaltyStatement> statementsByHolder) {
+        double totalDistributed = statementsByHolder.values().stream()
+                .mapToDouble(RoyaltyStatement::getTotalAmount)
+                .sum();
         run.setTotalDistributed(totalDistributed);
         run.setStatus(DistributionStatus.COMPLETED);
         distributionRunRepository.save(run);
-
-        return List.copyOf(statementsByHolder.values());
     }
 
+    // ── Rights share validation (callable independently) ─────────────────────
+
     /**
-     * Executes a distribution run with default parameters:
-     * all exploitation types, no minimum revenue threshold, EUR currency.
+     * Validates that the rights share percentage on a usage report matches
+     * the share registered against the musical work, and returns the net
+     * royalty amount for the rights holder.
+     *
+     * @throws IllegalArgumentException if the musical work is not found
+     * @throws IllegalStateException    if the share percentages do not match
      */
-    public List<RoyaltyStatement> executeDistribution(UUID distributionRunId) {
-        return calculateRoyalties(distributionRunId, DistributionKey.unrestricted(), "EUR");
+    public double resolveRightsShares(UUID musicalWorkId, RightsShare reportedShare,
+                                      double grossAmount) {
+        MusicalWork work = musicalWorkRepository.findById(musicalWorkId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "MusicalWork not found: " + musicalWorkId));
+
+        double registeredPercentage = work.getRightsShare().getPercentage();
+        if (Math.abs(registeredPercentage - reportedShare.getPercentage()) > 0.001) {
+            throw new IllegalStateException(
+                    "Rights share mismatch for work " + musicalWorkId
+                    + ": registered " + registeredPercentage
+                    + " but reported " + reportedShare.getPercentage());
+        }
+
+        return reportedShare.applyTo(grossAmount);
     }
 }

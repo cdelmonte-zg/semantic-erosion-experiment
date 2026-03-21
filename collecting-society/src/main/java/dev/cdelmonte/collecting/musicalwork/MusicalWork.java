@@ -1,55 +1,34 @@
 package dev.cdelmonte.collecting.musicalwork;
 
-import java.math.BigDecimal;
-import java.util.Objects;
+import dev.cdelmonte.collecting.distribution.RightsShare;
+
 import java.util.UUID;
 
 /**
  * Registered copyrighted composition managed by the society.
- * Each musical work has an ISWC code and belongs to one or more rights holders.
+ * Each musical work has an ISWC code and is associated with a rights share
+ * that records the rights holder's entitlement, role, and territory.
  */
 public class MusicalWork {
 
     private final UUID id;
     private String title;
     private String iswcCode;        // International Standard Musical Work Code
+    private RightsShare rightsShare;
 
-    private UUID rightsHolderId;
-    private BigDecimal rightsSharePercentage;   // 0.0 to 1.0
-
-    public MusicalWork(UUID id, String title, String iswcCode,
-                       UUID rightsHolderId, BigDecimal rightsSharePercentage) {
-        this.id = Objects.requireNonNull(id, "id must not be null");
-        this.title = Objects.requireNonNull(title, "title must not be null");
+    public MusicalWork(UUID id, String title, String iswcCode, RightsShare rightsShare) {
+        this.id = id;
+        this.title = title;
         this.iswcCode = iswcCode;
-        this.rightsHolderId = rightsHolderId;
-        this.rightsSharePercentage = rightsSharePercentage;
+        this.rightsShare = rightsShare;
     }
 
     public UUID getId() { return id; }
     public String getTitle() { return title; }
     public String getIswcCode() { return iswcCode; }
-    public UUID getRightsHolderId() { return rightsHolderId; }
-    public BigDecimal getRightsSharePercentage() { return rightsSharePercentage; }
+    public RightsShare getRightsShare() { return rightsShare; }
 
-    public void setTitle(String title) {
-        this.title = Objects.requireNonNull(title, "title must not be null");
-    }
+    public void setTitle(String title) { this.title = title; }
     public void setIswcCode(String iswcCode) { this.iswcCode = iswcCode; }
-    public void setRightsHolderId(UUID rightsHolderId) { this.rightsHolderId = rightsHolderId; }
-    public void setRightsSharePercentage(BigDecimal rightsSharePercentage) {
-        this.rightsSharePercentage = rightsSharePercentage;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MusicalWork other)) return false;
-        return Objects.equals(id, other.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+    public void setRightsShare(RightsShare rightsShare) { this.rightsShare = rightsShare; }
 }

@@ -151,7 +151,7 @@ def plot_distance_heatmap(results_dir: str, agent: str,
     for iter_idx, result in enumerate(results):
         for term_idx, term in enumerate(all_terms):
             term_data = result["terms"].get(term, {})
-            status = term_data.get("status", "DISAPPEARED").upper()
+            status = term_data.get("state", "DISAPPEARED").upper()
             matrix[term_idx, iter_idx] = STATE_TO_VALUE.get(status, 5)
 
     fig, ax = plt.subplots(figsize=(12, 8))

@@ -15,7 +15,7 @@ public interface UsageReportRepository {
 
     List<UsageReport> findByMusicalWorkId(UUID musicalWorkId);
 
-    List<UsageReport> findByReportingPeriod(SettlementPeriod period);
+    List<UsageReport> findBySettlementPeriod(SettlementPeriod period);
 
     List<UsageReport> findAll();
 
