@@ -1,0 +1,133 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 2,
+  "run": 1,
+  "commit": "3d24497",
+  "preservation_score": 0.0,
+  "emergence_score": null,
+  "extraction_ratio": 0.0,
+  "latent_extracted": 0,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "ERODED",
+      "current_name": "UsageType",
+      "distance": 0.462,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 2,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Run.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Statement.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/UsageType.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/Work.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/WorkRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/Holder.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/HolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/Allocation.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/Period.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/Report.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/ReportRepository.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/ExploitationType.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWorkRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolder.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/ReportingPeriod.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/RightsAllocation.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java"
+    ],
+    "files_modified": [],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunStatus.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/RunStatus.java"
+      }
+    ],
+    "total_files_changed": 27,
+    "insertions": 480,
+    "deletions": 585
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "agent": "claude_code",
+  "prompt_set": "B",
+  "iteration": 4,
+  "run": 2,
+  "commit": "ee7fbb6",
+  "preservation_score": 0.8846,
+  "emergence_score": 1.0,
+  "extraction_ratio": 0.5,
+  "latent_extracted": 2,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "MATERIALIZED",
+      "current_name": "RightsHolder",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "MATERIALIZED",
+      "current_name": "MusicalWork",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "MATERIALIZED",
+      "current_name": "DistributionRun",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "MATERIALIZED",
+      "current_name": "UsageReport",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "ERODED",
+      "current_name": "UsageType",
+      "distance": 0.462,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "MATERIALIZED",
+      "current_name": "RoyaltyStatement",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "RightsShare",
+      "location": "class_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "DistributionKey",
+      "location": "class_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 4,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/RateCategory.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/TariffClass.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionKey.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWorkRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolder.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/AccountingPeriod.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/ExploitationType.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/musicalwork/UsageType.java"
+      }
+    ],
+    "total_files_changed": 13,
+    "insertions": 96,
+    "deletions": 95
+  }
+}

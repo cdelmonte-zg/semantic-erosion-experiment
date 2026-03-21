@@ -1,0 +1,97 @@
+{
+  "agent": "opencode",
+  "prompt_set": "A",
+  "iteration": 0,
+  "run": 3,
+  "commit": "ec14359",
+  "preservation_score": 1.0,
+  "emergence_score": null,
+  "extraction_ratio": 0.0,
+  "latent_extracted": 0,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "MATERIALIZED",
+      "current_name": "RightsHolder",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "MATERIALIZED",
+      "current_name": "MusicalWork",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "MATERIALIZED",
+      "current_name": "DistributionRun",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "MATERIALIZED",
+      "current_name": "UsageReport",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "MATERIALIZED",
+      "current_name": "ExploitationType",
+      "location": "enum_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "MATERIALIZED",
+      "current_name": "RoyaltyStatement",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  }
+}

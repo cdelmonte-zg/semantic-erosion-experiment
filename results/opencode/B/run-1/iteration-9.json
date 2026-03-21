@@ -1,0 +1,160 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 9,
+  "run": 1,
+  "commit": "9bccdfc",
+  "preservation_score": 0.0,
+  "emergence_score": 0.0,
+  "extraction_ratio": 1.0,
+  "latent_extracted": 4,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "ERODED",
+      "current_name": "OwnershipInfo",
+      "distance": 0.5149,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "ERODED",
+      "current_name": "Asset",
+      "distance": 0.7832,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "ERODED",
+      "current_name": "BatchProcess",
+      "distance": 0.6763,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "ERODED",
+      "current_name": "ActivityLog",
+      "distance": 0.5989,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "ERODED",
+      "current_name": "UsageType",
+      "distance": 0.462,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "ERODED",
+      "current_name": "PaymentRecord",
+      "distance": 0.8635,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "ERODED",
+      "current_name": "DateRange",
+      "distance": 0.6772,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "ERODED",
+      "current_name": "RateTier",
+      "distance": 0.668,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "ERODED",
+      "current_name": "OwnershipInfo",
+      "distance": 0.4687,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "ERODED",
+      "current_name": "SelectionCriteria",
+      "distance": 0.8657,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 9,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/BatchProcess.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/BatchProcessRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RateTier.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/SelectionCriteria.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/AssetRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/UsageType.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/MemberRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/ActivityLogRepository.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionKey.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyDistributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/TariffClass.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/ExploitationType.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWorkRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunStatus.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/BatchProcessStatus.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/DateRange.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/PaymentRecord.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/musicalwork/Asset.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/RightsShare.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/musicalwork/OwnershipInfo.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolder.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/rightsholder/Member.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/usage/ActivityLog.java"
+      }
+    ],
+    "total_files_changed": 26,
+    "insertions": 517,
+    "deletions": 521
+  }
+}

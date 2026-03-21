@@ -75,20 +75,20 @@ runs:
     phase: 2
     runs: 1
 
-  # Qwen3-Coder 30B (local, free)
-  - agent: opencode
-    type: erosion
-    prompt_set: A
-    model: qwen3-coder
-    phase: 2
-    runs: 1
+  # Qwen3-Coder 30B (local, free) — DISABLED: OpenCode config issues with Ollama
+  # - agent: opencode
+  #   type: erosion
+  #   prompt_set: A
+  #   model: qwen3-coder
+  #   phase: 2
+  #   runs: 1
 
-  - agent: opencode
-    type: erosion
-    prompt_set: B
-    model: qwen3-coder
-    phase: 2
-    runs: 1
+  # - agent: opencode
+  #   type: erosion
+  #   prompt_set: B
+  #   model: qwen3-coder
+  #   phase: 2
+  #   runs: 1
 
   # Control: OpenCode + GPT-5.4 with domain context (~$7)
   - agent: opencode
@@ -98,10 +98,10 @@ runs:
     phase: 2
     runs: 1
 
-  # Control: OpenCode + Qwen3 with domain context (free)
-  - agent: opencode
-    type: control_a
-    prompt_set: A
-    model: qwen3-coder
-    phase: 2
-    runs: 1
+  # Control: OpenCode + Qwen3 with domain context (free) — DISABLED
+  # - agent: opencode
+  #   type: control_a
+  #   prompt_set: A
+  #   model: qwen3-coder
+  #   phase: 2
+  #   runs: 1

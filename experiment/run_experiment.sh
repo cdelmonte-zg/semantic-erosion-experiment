@@ -19,15 +19,16 @@ PROMPT_SET_EARLY="${2:-unknown}"
 RUN_NUMBER_EARLY="${4:-1}"
 
 # Global debug log for live debugging
-MODEL_TAG="${MODEL:+${MODEL}-}"
+MODEL_TAG=""
+if [ -n "${MODEL:-}" ]; then MODEL_TAG="${MODEL}-"; fi
 DEBUG_LOG="/tmp/semantic-erosion-${AGENT}-${MODEL_TAG}${PROMPT_SET_EARLY}-run${RUN_NUMBER_EARLY}-$(date +%Y%m%d_%H%M%S).log"
-exec > >(tee -a "$DEBUG_LOG") 2>&1
 echo "Debug log: $DEBUG_LOG"
 PROMPT_SET="${2:?Usage: run_experiment.sh <agent> <A|B> [iterations] [run_number]}"
 ITERATIONS="${3:-10}"
 RUN_NUMBER="${4:-1}"
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 COLLECTING_SOCIETY="${PROJECT_ROOT}/collecting-society"
 GLOSSARY="${COLLECTING_SOCIETY}/GLOSSARY.yaml"
 SOURCE="${COLLECTING_SOCIETY}/src"

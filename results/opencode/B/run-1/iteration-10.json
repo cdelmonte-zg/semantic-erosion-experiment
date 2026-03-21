@@ -1,0 +1,120 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 10,
+  "run": 1,
+  "commit": "9aa0633",
+  "preservation_score": 0.0,
+  "emergence_score": 0.0,
+  "extraction_ratio": 1.0,
+  "latent_extracted": 4,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "ERODED",
+      "current_name": "OwnershipInfo",
+      "distance": 0.5149,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "ERODED",
+      "current_name": "Asset",
+      "distance": 0.7832,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "ERODED",
+      "current_name": "BatchProcess",
+      "distance": 0.6763,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "ERODED",
+      "current_name": "ActivityLog",
+      "distance": 0.5989,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "ERODED",
+      "current_name": "UsageType",
+      "distance": 0.462,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "ERODED",
+      "current_name": "PaymentRecord",
+      "distance": 0.8635,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "ERODED",
+      "current_name": "DateRange",
+      "distance": 0.6772,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "ERODED",
+      "current_name": "RateTier",
+      "distance": 0.668,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "ERODED",
+      "current_name": "OwnershipInfo",
+      "distance": 0.4687,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "ERODED",
+      "current_name": "SelectionCriteria",
+      "distance": 0.8657,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 10,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/BatchProcess.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/PaymentRecord.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RateTier.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/SelectionCriteria.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/Asset.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/OwnershipInfo.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/Member.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/ActivityLog.java"
+    ],
+    "files_renamed": [],
+    "total_files_changed": 10,
+    "insertions": 168,
+    "deletions": 118
+  }
+}

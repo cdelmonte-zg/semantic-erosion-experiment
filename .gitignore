@@ -4,6 +4,5 @@
 __pycache__/
 *.pyc
 Modelfile
-results/
 logs/
 .aider*

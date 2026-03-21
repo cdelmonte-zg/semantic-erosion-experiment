@@ -1,0 +1,110 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 5,
+  "run": 1,
+  "commit": "366eb27",
+  "preservation_score": 0.0,
+  "emergence_score": null,
+  "extraction_ratio": 0.0,
+  "latent_extracted": 0,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "ERODED",
+      "current_name": "Asset",
+      "distance": 0.7832,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 5,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/allocation/AllocationResult.java",
+      "src/main/java/dev/cdelmonte/collecting/allocation/AllocationRun.java",
+      "src/main/java/dev/cdelmonte/collecting/allocation/AllocationRunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/allocation/AllocationService.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/allocation/BatchStatus.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/allocation/AllocationRunStatus.java"
+      }
+    ],
+    "total_files_changed": 5,
+    "insertions": 103,
+    "deletions": 70
+  }
+}

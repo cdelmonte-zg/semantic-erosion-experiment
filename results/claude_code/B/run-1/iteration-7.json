@@ -1,0 +1,153 @@
+{
+  "agent": "claude_code",
+  "prompt_set": "B",
+  "iteration": 7,
+  "run": 1,
+  "commit": "543aa0c",
+  "preservation_score": 0.1154,
+  "emergence_score": 1.0,
+  "extraction_ratio": 0.25,
+  "latent_extracted": 1,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "MATERIALIZED",
+      "current_name": "ExploitationType",
+      "location": "enum_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "TariffClass",
+      "location": "enum_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 7,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/WorkRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/HolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/ReportRepository.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWorkRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/TariffClass.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionKey.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/Criteria.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/Period.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/Run.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionStatus.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/RunStatus.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/Statement.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/RightsShare.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/musicalwork/Share.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/musicalwork/Work.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolder.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/rightsholder/Holder.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/usage/Report.java"
+      }
+    ],
+    "total_files_changed": 20,
+    "insertions": 253,
+    "deletions": 255
+  }
+}

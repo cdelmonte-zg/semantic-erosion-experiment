@@ -1,0 +1,154 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 8,
+  "run": 1,
+  "commit": "22fbfc2",
+  "preservation_score": 1.0,
+  "emergence_score": 1.0,
+  "extraction_ratio": 1.0,
+  "latent_extracted": 4,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "MATERIALIZED",
+      "current_name": "RightsHolder",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "MATERIALIZED",
+      "current_name": "MusicalWork",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "MATERIALIZED",
+      "current_name": "DistributionRun",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "MATERIALIZED",
+      "current_name": "UsageReport",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "MATERIALIZED",
+      "current_name": "ExploitationType",
+      "location": "enum_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "MATERIALIZED",
+      "current_name": "RoyaltyStatement",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "SettlementPeriod",
+      "location": "record_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "TariffClass",
+      "location": "record_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "RightsShare",
+      "location": "record_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "DistributionKey",
+      "location": "class_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 8,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionKey.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunStore.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/TariffClass.java",
+      "src/main/java/dev/cdelmonte/collecting/rights/RightsHolder.java",
+      "src/main/java/dev/cdelmonte/collecting/rights/RightsHolderStore.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/RightsShare.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/SettlementPeriod.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportStore.java",
+      "src/main/java/dev/cdelmonte/collecting/work/MusicalWork.java",
+      "src/main/java/dev/cdelmonte/collecting/work/MusicalWorkStore.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Key.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Run.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RunStore.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Statement.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Tariff.java",
+      "src/main/java/dev/cdelmonte/collecting/rights/Holder.java",
+      "src/main/java/dev/cdelmonte/collecting/rights/HolderStore.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/Period.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/Report.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/ReportStore.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/Share.java",
+      "src/main/java/dev/cdelmonte/collecting/work/Work.java",
+      "src/main/java/dev/cdelmonte/collecting/work/WorkStore.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/RunStatus.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunStatus.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/usage/UseType.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/usage/ExploitationType.java"
+      }
+    ],
+    "total_files_changed": 29,
+    "insertions": 621,
+    "deletions": 566
+  }
+}
