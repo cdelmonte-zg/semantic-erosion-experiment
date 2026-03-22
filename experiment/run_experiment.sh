@@ -198,8 +198,42 @@ fi
 # Override with MODEL env var for Phase 2 (vary model, fixed agent)
 MODEL="${MODEL:-claude-sonnet-4-6}"
 
+# --- Write agent config before iterations ---
+# OpenCode needs opencode.json in project dir; write it once after checkout
+if [ "$AGENT" == "opencode" ]; then
+  OC_MODEL_INIT=""
+  case "$MODEL" in
+    claude-sonnet*|anthropic*)  OC_MODEL_INIT="anthropic/claude-sonnet-4-6" ;;
+    gpt-5.4*|openai*)          OC_MODEL_INIT="openai/gpt-5.4" ;;
+    qwen*|ollama*)             OC_MODEL_INIT="ollama/qwen3-coder-experiment" ;;
+    gemini*)                   OC_MODEL_INIT="google/gemini-2.5-flash" ;;
+    *)                         OC_MODEL_INIT="anthropic/claude-sonnet-4-6" ;;
+  esac
+  if [[ "$OC_MODEL_INIT" == ollama/* ]]; then
+    OLLAMA_MODEL_INIT="${OC_MODEL_INIT#ollama/}"
+    cat > "${COLLECTING_SOCIETY}/opencode.json" << OCINIT
+{
+  "\$schema": "https://opencode.ai/config.json",
+  "model": "$OC_MODEL_INIT",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama",
+      "options": {"baseURL": "http://localhost:11434/v1", "timeout": 600000},
+      "models": {"$OLLAMA_MODEL_INIT": {"name": "$OLLAMA_MODEL_INIT"}}
+    }
+  }
+}
+OCINIT
+  else
+    cat > "${COLLECTING_SOCIETY}/opencode.json" << OCINIT
+{"\$schema": "https://opencode.ai/config.json", "model": "$OC_MODEL_INIT"}
+OCINIT
+  fi
+fi
+
 # --- Agent runner function ---
-AGENT_TIMEOUT=1200  # 10 minutes max per iteration
+AGENT_TIMEOUT=1200  # 20 minutes max per iteration
 
 BATCH_SUFFIX="Do not ask questions or request clarification. Apply all changes directly to the files."
 
@@ -218,6 +252,8 @@ run_agent() {
       2>&1 | tee "$LOG_FILE" || return $?
 
   elif [ "$AGENT" == "opencode" ]; then
+    # Fix: reset global config to prevent "Unrecognized key" errors
+    echo '{"$schema": "https://opencode.ai/config.json"}' > ~/.config/opencode/opencode.json 2>/dev/null || true
     # OpenCode: pass API key and model explicitly
     local OC_MODEL OC_KEY
     case "$MODEL" in

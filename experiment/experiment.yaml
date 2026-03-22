@@ -71,9 +71,7 @@ runs:
     phase: 2
     runs: 1
 
-  # Qwen3-Coder 30B (local, free) — Set A only
-  # Set B disabled: Qwen3 times out on every iteration (20min timeout too short for local 30B)
-  # Control A disabled: no erosion to mitigate
+  # Qwen3-Coder 30B (local, free)
   - agent: opencode
     type: erosion
     prompt_set: A
@@ -81,12 +79,12 @@ runs:
     phase: 2
     runs: 1
 
-  # - agent: opencode
-  #   type: erosion
-  #   prompt_set: B
-  #   model: qwen3-coder
-  #   phase: 2
-  #   runs: 1
+  - agent: opencode
+    type: erosion
+    prompt_set: B
+    model: qwen3-coder
+    phase: 2
+    runs: 1
 
   # Control: OpenCode + GPT-5.4 with domain context (~$7)
   - agent: opencode
