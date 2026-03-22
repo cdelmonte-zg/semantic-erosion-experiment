@@ -436,7 +436,8 @@ FEOF
           > "${RESULTS_DIR}/iteration-${j}.json"
       done
 
-      git checkout . && git clean -fd src/
+      git checkout . 2>/dev/null; git clean -fd src/ 2>/dev/null
+      git checkout main 2>/dev/null || true
       break
     fi
   fi
@@ -545,6 +546,10 @@ with open(result_file, 'w') as f:
 
   echo ""
 done
+
+# --- Restore working tree to main ---
+git checkout . 2>/dev/null; git clean -fd src/ 2>/dev/null
+git checkout main 2>/dev/null || true
 
 echo "=== Experiment complete ==="
 echo "Results in: ${RESULTS_DIR}"
