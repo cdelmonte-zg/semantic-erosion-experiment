@@ -3,11 +3,11 @@
   "prompt_set": "B",
   "iteration": 6,
   "run": 1,
-  "commit": "ec14359",
+  "commit": "670072f",
   "preservation_score": 1.0,
-  "emergence_score": 0.0,
-  "extraction_ratio": 0.0,
-  "latent_extracted": 0,
+  "emergence_score": 0.75,
+  "extraction_ratio": 0.75,
+  "latent_extracted": 3,
   "latent_total": 4,
   "materialized_count": 6,
   "terms": {
@@ -66,23 +66,26 @@
       "weight": 0.6
     },
     "SettlementPeriod": {
-      "state": "LATENT",
-      "current_name": null,
-      "match_type": null,
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "SettlementPeriod",
+      "location": "class_name",
+      "match_type": "exact",
       "initial_state": "latent",
       "weight": 0.8
     },
     "TariffClass": {
-      "state": "LATENT",
-      "current_name": null,
-      "match_type": null,
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "TariffClass",
+      "location": "class_name",
+      "match_type": "exact",
       "initial_state": "latent",
       "weight": 0.8
     },
     "RightsShare": {
-      "state": "LATENT",
-      "current_name": null,
-      "match_type": null,
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "RightsShare",
+      "location": "class_name",
+      "match_type": "exact",
       "initial_state": "latent",
       "weight": 0.8
     },
@@ -94,8 +97,20 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 0,
   "compile_error_count": 0,
-  "compile_autofix": "none",
-  "glossary_tampered": false
+  "compile_autofix": "succeeded_attempt_1",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 6,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java"
+    ],
+    "files_renamed": [],
+    "total_files_changed": 1,
+    "insertions": 9,
+    "deletions": 9
+  }
 }

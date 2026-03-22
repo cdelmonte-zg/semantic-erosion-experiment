@@ -1,10 +1,10 @@
 {
   "agent": "opencode",
   "prompt_set": "B",
-  "iteration": 2,
+  "iteration": 7,
   "run": 1,
-  "commit": "1ad5f8c",
-  "preservation_score": 1.0,
+  "commit": "e3eb05b",
+  "preservation_score": 0.8077,
   "emergence_score": 0.75,
   "extraction_ratio": 0.75,
   "latent_extracted": 3,
@@ -21,11 +21,9 @@
       "weight": 1.0
     },
     "MusicalWork": {
-      "state": "MATERIALIZED",
-      "current_name": "MusicalWork",
-      "location": "class_name",
-      "location_weight": 1.0,
-      "match_type": "exact",
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
       "initial_state": "materialized",
       "weight": 1.0
     },
@@ -98,20 +96,35 @@
     }
   },
   "compile_error_count": 0,
-  "compile_autofix": "succeeded_attempt_3",
+  "compile_autofix": "succeeded_attempt_1",
   "glossary_tampered": false,
   "changes_applied": 1,
   "change_analysis": {
-    "iteration": 2,
-    "files_added": [],
-    "files_deleted": [],
-    "files_modified": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyCalculationService.java"
+    "iteration": 7,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/WorkRepository.java"
     ],
-    "files_renamed": [],
-    "total_files_changed": 2,
-    "insertions": 44,
-    "deletions": 43
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWorkRepository.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyCalculationService.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java",
+      "src/test/java/dev/cdelmonte/collecting/distribution/DistributionServiceTest.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyDistribution.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/musicalwork/Work.java"
+      }
+    ],
+    "total_files_changed": 8,
+    "insertions": 59,
+    "deletions": 59
   }
 }

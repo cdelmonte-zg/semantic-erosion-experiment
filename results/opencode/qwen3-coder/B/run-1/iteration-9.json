@@ -1,13 +1,13 @@
 {
   "agent": "opencode",
   "prompt_set": "B",
-  "iteration": 2,
+  "iteration": 9,
   "run": 1,
-  "commit": "1ad5f8c",
-  "preservation_score": 1.0,
-  "emergence_score": 0.75,
-  "extraction_ratio": 0.75,
-  "latent_extracted": 3,
+  "commit": "5517046",
+  "preservation_score": 0.8077,
+  "emergence_score": 0.5,
+  "extraction_ratio": 0.5,
+  "latent_extracted": 2,
   "latent_total": 4,
   "materialized_count": 6,
   "terms": {
@@ -21,11 +21,9 @@
       "weight": 1.0
     },
     "MusicalWork": {
-      "state": "MATERIALIZED",
-      "current_name": "MusicalWork",
-      "location": "class_name",
-      "location_weight": 1.0,
-      "match_type": "exact",
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
       "initial_state": "materialized",
       "weight": 1.0
     },
@@ -82,10 +80,9 @@
       "weight": 0.8
     },
     "RightsShare": {
-      "state": "CORRECTLY_MATERIALIZED",
-      "current_name": "RightsShare",
-      "location": "class_name",
-      "match_type": "exact",
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
       "initial_state": "latent",
       "weight": 0.8
     },
@@ -98,20 +95,27 @@
     }
   },
   "compile_error_count": 0,
-  "compile_autofix": "succeeded_attempt_3",
+  "compile_autofix": "succeeded_attempt_1",
   "glossary_tampered": false,
   "changes_applied": 1,
   "change_analysis": {
-    "iteration": 2,
+    "iteration": 9,
     "files_added": [],
     "files_deleted": [],
     "files_modified": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyCalculationService.java"
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyCalculationService.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/Work.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+      "src/test/java/dev/cdelmonte/collecting/distribution/DistributionServiceTest.java"
     ],
-    "files_renamed": [],
-    "total_files_changed": 2,
-    "insertions": 44,
-    "deletions": 43
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/RightsShare.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/Share.java"
+      }
+    ],
+    "total_files_changed": 5,
+    "insertions": 21,
+    "deletions": 25
   }
 }
