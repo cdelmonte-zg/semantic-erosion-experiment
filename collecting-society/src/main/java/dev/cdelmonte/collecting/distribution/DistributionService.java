@@ -8,6 +8,7 @@ import dev.cdelmonte.collecting.rightsholder.RightsHolderRepository;
 import dev.cdelmonte.collecting.usage.UsageReport;
 import dev.cdelmonte.collecting.usage.UsageReportRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,12 +16,21 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Domain service that orchestrates a royalty distribution run.
+ * S1: God Class — this service handles royalty calculation, tariff application,
+ * claim resolution, distribution key filtering, and statement generation.
+ * All logic that should be in separate domain services is concentrated here.
  *
- * The service delegates eligibility filtering to {@link DistributionKey},
- * tariff rate lookup to {@link TariffClass}, and rights share calculation
- * to {@link RightsShare}. Each logical step of the pipeline is handled
- * by a dedicated private method.
+ * Deliberate code smells embedded in this class:
+ *   S1  God Class (this entire class)
+ *   S2  Long Method (calculateRoyalties)
+ *   S3  Long Parameter List (calculateRoyalties signature)
+ *   S4  Feature Envy (accessing UsageReport/MusicalWork internals)
+ *   S5  Primitive Obsession / Latent SettlementPeriod (raw LocalDate pairs)
+ *   S6  Data Clumps / Latent RightsShare (holderId + percentage repeated)
+ *   S7  Switch on Type / Latent TariffClass (switch on ExploitationType)
+ *   S8  Comments as deodorant (comments papering over complexity)
+ *   S9  Latent DistributionKey (inline filtering logic)
+ *   S10 Speculative Generality (Report base class used by RoyaltyStatement)
  */
 public class DistributionService {
 
@@ -40,135 +50,181 @@ public class DistributionService {
     }
 
     /**
-     * Executes a distribution run and returns one royalty statement per rights holder.
+     * S2: Long Method — this method does too many things: validates the run,
+     * filters usage reports, applies tariffs, resolves claims, and generates statements.
      *
-     * @param distributionRunId the run to execute
-     * @param distributionKey   eligibility criteria (period, type filter, revenue threshold)
-     * @param currencyCode      currency for the royalty statements
+     * S3: Long Parameter List — settlement period dates passed as raw parameters
+     * instead of a SettlementPeriod value object.
+     *
+     * @param distributionRunId  the run to execute
+     * @param periodStart        start of the settlement period
+     * @param periodEnd          end of the settlement period
+     * @param includeOnlyTypes   filter for specific exploitation types (or null for all)
+     * @param minimumRevenue     minimum revenue threshold to include a usage report
+     * @param currencyCode       currency for the royalty statements
      * @return list of generated royalty statements
      */
-    public List<RoyaltyStatement> calculateRoyalties(UUID distributionRunId,
-                                                     DistributionKey distributionKey,
-                                                     String currencyCode) {
-        DistributionRun run = loadAndStartRun(distributionRunId, distributionKey);
+    public List<RoyaltyStatement> calculateRoyalties(
+            UUID distributionRunId,
+            LocalDate periodStart,          // S5: raw date instead of SettlementPeriod
+            LocalDate periodEnd,            // S5: raw date instead of SettlementPeriod
+            List<ExploitationType> includeOnlyTypes,
+            double minimumRevenue,
+            String currencyCode) {
 
-        List<UsageReport> eligibleReports = filterEligibleReports(distributionKey);
+        // --- Step 1: Load and validate distribution run ---
+        DistributionRun run = distributionRunRepository.findById(distributionRunId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "DistributionRun not found: " + distributionRunId));
 
-        Map<UUID, RoyaltyStatement> statementsByHolder =
-                computeStatements(eligibleReports, distributionRunId, currencyCode);
+        if (!"PENDING".equals(run.getStatus())) {
+            throw new IllegalStateException(
+                    "DistributionRun must be PENDING, was: " + run.getStatus());
+        }
 
-        finalizeRun(run, statementsByHolder);
+        run.setStatus("RUNNING");
+        run.setPeriodStart(periodStart);
+        run.setPeriodEnd(periodEnd);
+        distributionRunRepository.save(run);
+
+        // --- Step 2: Load usage reports for the settlement period ---
+        // S8: Comment papering over the fact that this filtering logic
+        //     should be encapsulated in a DistributionKey domain object
+        List<UsageReport> allReports =
+                usageReportRepository.findByReportingPeriod(periodStart, periodEnd);
+
+        // S9: Latent DistributionKey — inline filtering logic that determines
+        //     which usage reports qualify for this distribution run
+        List<UsageReport> filteredReports = new ArrayList<>();
+        for (UsageReport report : allReports) {
+            // S4: Feature Envy — reaching deep into UsageReport internals
+            boolean matchesType = (includeOnlyTypes == null)
+                    || includeOnlyTypes.contains(report.getExploitationType());
+            boolean meetsThreshold = report.getRevenue() >= minimumRevenue;
+
+            // S8: This comment explains what a DistributionKey.matches() would do
+            // Check that the report falls within the settlement period boundaries
+            boolean withinPeriod =
+                    !report.getReportingPeriodStart().isBefore(periodStart)
+                    && !report.getReportingPeriodEnd().isAfter(periodEnd);
+
+            if (matchesType && meetsThreshold && withinPeriod) {
+                filteredReports.add(report);
+            }
+        }
+
+        // --- Step 3: Calculate royalties per rights holder ---
+        // S8: Comment hiding the fact that this should be a separate method or class
+        Map<UUID, RoyaltyStatement> statementsByHolder = new HashMap<>();
+        // S6: Parallel maps — additional data clump fields for RightsShare
+        Map<UUID, String> workToRole = new HashMap<>();
+        Map<UUID, String> workToTerritory = new HashMap<>();
+        double totalDistributed = 0.0;
+
+        for (UsageReport report : filteredReports) {
+            // S7: Switch on Type / Latent TariffClass — tariff rate determined
+            //     by switching on ExploitationType instead of using a TariffClass object
+            double tariffRate = applyTariff(report.getExploitationType());
+
+            // S4: Feature Envy — pulling data out of UsageReport to compute here
+            double grossRoyalty = report.getRevenue() * tariffRate;
+
+            // S6: Data Clump / Latent RightsShare — accessing the loose share fields
+            //     that should be a RightsShare value object
+            UUID holderId = report.getRightsHolderId();
+            double sharePercentage = report.getRightsSharePercentage();
+            String holderRole = report.getRightsHolderRole();
+            String territory = report.getShareTerritory();
+
+            // S6: populate parallel maps for the data clump
+            workToRole.put(report.getMusicalWorkId(), holderRole);
+            workToTerritory.put(report.getMusicalWorkId(), territory);
+
+            // S8: resolveRightsShares — apply the rights holder's share percentage
+            double holderRoyalty = grossRoyalty * sharePercentage;
+
+            // Build or update the royalty statement for this holder
+            RoyaltyStatement statement = statementsByHolder.get(holderId);
+            if (statement == null) {
+                // S4: Feature Envy — looking up rights holder name from repository
+                String holderName = rightsHolderRepository.findById(holderId)
+                        .map(RightsHolder::getName)
+                        .orElse("Unknown");
+
+                statement = new RoyaltyStatement(
+                        UUID.randomUUID(), distributionRunId, holderId, holderName);
+                statement.setCurrency(currencyCode);
+                statementsByHolder.put(holderId, statement);
+            }
+
+            statement.addAmount(holderRoyalty);
+            totalDistributed += holderRoyalty;
+        }
+
+        // --- Step 4: Finalize the distribution run ---
+        run.setTotalDistributed(totalDistributed);
+        run.setStatus("COMPLETED");
+        distributionRunRepository.save(run);
 
         return new ArrayList<>(statementsByHolder.values());
     }
 
     /**
-     * Convenience method that executes a distribution run for the given period
-     * with default parameters: all exploitation types, no minimum revenue, EUR currency.
+     * S7: Switch on Type — maps ExploitationType to a tariff rate.
+     * A dedicated TariffClass type would encapsulate this mapping,
+     * but instead it lives as a switch statement in the service.
      */
-    public List<RoyaltyStatement> executeDistribution(UUID distributionRunId,
-                                                      SettlementPeriod settlementPeriod) {
-        DistributionKey defaultKey = new DistributionKey(null, 0.0, settlementPeriod);
-        return calculateRoyalties(distributionRunId, defaultKey, "EUR");
-    }
-
-    // ── Pipeline steps ────────────────────────────────────────────────────────
-
-    private DistributionRun loadAndStartRun(UUID distributionRunId,
-                                            DistributionKey distributionKey) {
-        DistributionRun run = distributionRunRepository.findById(distributionRunId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "DistributionRun not found: " + distributionRunId));
-
-        if (run.getStatus() != DistributionStatus.PENDING) {
-            throw new IllegalStateException(
-                    "DistributionRun must be PENDING, was: " + run.getStatus());
+    public double applyTariff(ExploitationType exploitationType) {
+        // S7: Latent TariffClass — this switch should be a TariffClass lookup
+        switch (exploitationType) {
+            case BROADCAST:
+                return 0.09;
+            case PUBLIC_PERFORMANCE:
+                return 0.12;
+            case MECHANICAL_REPRODUCTION:
+                return 0.065;
+            case DIGITAL_STREAMING:
+                return 0.04;
+            case SYNCHRONIZATION:
+                return 0.05;
+            default:
+                throw new IllegalArgumentException(
+                        "Unknown exploitation type: " + exploitationType);
         }
-
-        run.setStatus(DistributionStatus.RUNNING);
-        run.setSettlementPeriod(distributionKey.getSettlementPeriod());
-        distributionRunRepository.save(run);
-        return run;
     }
-
-    private List<UsageReport> filterEligibleReports(DistributionKey distributionKey) {
-        List<UsageReport> allReports = usageReportRepository.findBySettlementPeriod(
-                distributionKey.getSettlementPeriod());
-
-        List<UsageReport> eligible = new ArrayList<>();
-        for (UsageReport report : allReports) {
-            if (distributionKey.matches(report)) {
-                eligible.add(report);
-            }
-        }
-        return eligible;
-    }
-
-    private Map<UUID, RoyaltyStatement> computeStatements(List<UsageReport> reports,
-                                                          UUID distributionRunId,
-                                                          String currencyCode) {
-        Map<UUID, RoyaltyStatement> statementsByHolder = new HashMap<>();
-
-        for (UsageReport report : reports) {
-            TariffClass tariff = TariffClass.forExploitationType(report.getExploitationType());
-            double grossRoyalty = report.getRevenue() * tariff.rate();
-
-            RightsShare share = report.getRightsShare();
-            double holderRoyalty = share.applyTo(grossRoyalty);
-            UUID holderId = share.getHolderId();
-
-            RoyaltyStatement statement = statementsByHolder.computeIfAbsent(holderId,
-                    id -> createStatement(id, distributionRunId, currencyCode));
-
-            statement.addAmount(holderRoyalty);
-        }
-
-        return statementsByHolder;
-    }
-
-    private RoyaltyStatement createStatement(UUID holderId, UUID distributionRunId,
-                                             String currencyCode) {
-        String holderName = rightsHolderRepository.findById(holderId)
-                .map(RightsHolder::getName)
-                .orElse("Unknown");
-        return new RoyaltyStatement(UUID.randomUUID(), distributionRunId,
-                holderId, holderName, currencyCode);
-    }
-
-    private void finalizeRun(DistributionRun run,
-                             Map<UUID, RoyaltyStatement> statementsByHolder) {
-        double totalDistributed = statementsByHolder.values().stream()
-                .mapToDouble(RoyaltyStatement::getTotalAmount)
-                .sum();
-        run.setTotalDistributed(totalDistributed);
-        run.setStatus(DistributionStatus.COMPLETED);
-        distributionRunRepository.save(run);
-    }
-
-    // ── Rights share validation (callable independently) ─────────────────────
 
     /**
-     * Validates that the rights share percentage on a usage report matches
-     * the share registered against the musical work, and returns the net
-     * royalty amount for the rights holder.
-     *
-     * @throws IllegalArgumentException if the musical work is not found
-     * @throws IllegalStateException    if the share percentages do not match
+     * S6: Data Clump — this method takes the same loose fields (holderId, sharePercentage)
+     * that should be a RightsShare value object.
+     * S3: Long Parameter List.
      */
-    public double resolveRightsShares(UUID musicalWorkId, RightsShare reportedShare,
-                                      double grossAmount) {
+    public double resolveRightsShares(UUID musicalWorkId, UUID rightsHolderId,
+                                     double rightsSharePercentage, double grossAmount) {
+        // S4: Feature Envy — accessing MusicalWork to validate share
         MusicalWork work = musicalWorkRepository.findById(musicalWorkId)
                 .orElseThrow(() -> new IllegalArgumentException(
                         "MusicalWork not found: " + musicalWorkId));
 
-        double registeredPercentage = work.getRightsShare().getPercentage();
-        if (Math.abs(registeredPercentage - reportedShare.getPercentage()) > 0.001) {
+        // S8: Verify the share matches what's registered
+        // In a real system, RightsShare would validate itself
+        if (Math.abs(work.getRightsSharePercentage() - rightsSharePercentage) > 0.001) {
             throw new IllegalStateException(
                     "Rights share mismatch for work " + musicalWorkId
-                    + ": registered " + registeredPercentage
-                    + " but reported " + reportedShare.getPercentage());
+                    + ": expected " + work.getRightsSharePercentage()
+                    + " but got " + rightsSharePercentage);
         }
 
-        return reportedShare.applyTo(grossAmount);
+        return grossAmount * rightsSharePercentage;
+    }
+
+    /**
+     * Convenience method to execute a distribution run for the given period
+     * with default parameters: all exploitation types, no minimum, EUR currency.
+     */
+    public List<RoyaltyStatement> executeDistribution(UUID distributionRunId,
+                                                       LocalDate periodStart,
+                                                       LocalDate periodEnd) {
+        return calculateRoyalties(
+                distributionRunId, periodStart, periodEnd, null, 0.0, "EUR");
     }
 }

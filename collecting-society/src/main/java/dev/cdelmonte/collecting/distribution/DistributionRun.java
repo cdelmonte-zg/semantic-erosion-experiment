@@ -1,5 +1,6 @@
 package dev.cdelmonte.collecting.distribution;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 /**
@@ -10,26 +11,32 @@ import java.util.UUID;
 public class DistributionRun {
 
     private final UUID id;
-    private DistributionStatus status;
-    private SettlementPeriod settlementPeriod;
+    private String status;          // PENDING, RUNNING, COMPLETED, FAILED
+
+    // S5: Latent SettlementPeriod — represented as raw LocalDate pair
+    //     instead of a dedicated SettlementPeriod value object
+    private LocalDate periodStart;
+    private LocalDate periodEnd;
+
     private double totalDistributed;
 
-    public DistributionRun(UUID id, SettlementPeriod settlementPeriod) {
+    public DistributionRun(UUID id, LocalDate periodStart, LocalDate periodEnd) {
         this.id = id;
-        this.settlementPeriod = settlementPeriod;
-        this.status = DistributionStatus.PENDING;
+        this.periodStart = periodStart;
+        this.periodEnd = periodEnd;
+        this.status = "PENDING";
         this.totalDistributed = 0.0;
     }
 
     public UUID getId() { return id; }
-    public DistributionStatus getStatus() { return status; }
-    public SettlementPeriod getSettlementPeriod() { return settlementPeriod; }
+    public String getStatus() { return status; }
+    public LocalDate getPeriodStart() { return periodStart; }
+    public LocalDate getPeriodEnd() { return periodEnd; }
     public double getTotalDistributed() { return totalDistributed; }
 
-    public void setStatus(DistributionStatus status) { this.status = status; }
-    public void setSettlementPeriod(SettlementPeriod settlementPeriod) {
-        this.settlementPeriod = settlementPeriod;
-    }
+    public void setStatus(String status) { this.status = status; }
+    public void setPeriodStart(LocalDate periodStart) { this.periodStart = periodStart; }
+    public void setPeriodEnd(LocalDate periodEnd) { this.periodEnd = periodEnd; }
     public void setTotalDistributed(double totalDistributed) {
         this.totalDistributed = totalDistributed;
     }
