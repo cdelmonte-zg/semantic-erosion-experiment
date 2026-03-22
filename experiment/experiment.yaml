@@ -74,14 +74,14 @@ runs:
     prompt_set: A
     model: qwen3-coder
     phase: 2
-    runs: 1
+    runs: 3
 
   - agent: opencode
     type: erosion
     prompt_set: B
     model: qwen3-coder
     phase: 2
-    runs: 1
+    runs: 3
 
   # Control A: domain context (restrictive) — Set A
   - agent: opencode
@@ -132,7 +132,7 @@ runs:
     prompt_set: C
     model: qwen3-coder
     phase: 3
-    runs: 1
+    runs: 3
 
   # ── Control B: stress prompts WITH domain context ──
   # Tests if glossary protects under explicit renaming pressure
