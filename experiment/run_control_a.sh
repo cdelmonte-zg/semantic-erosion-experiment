@@ -33,27 +33,39 @@ VENV="${PROJECT_ROOT}/.venv/bin/activate"
 export PYTHONPATH="${PROJECT_ROOT}/experiment:${PYTHONPATH:-}"
 
 # Load context and prompts
-CONTEXT=$(cat "${PROJECT_ROOT}/experiment/context_prompt.txt")
+# Load context — use permissive variant if CONTEXT_MODE is set
+if [ "${CONTEXT_MODE:-}" == "permissive" ]; then
+  CONTEXT=$(cat "${PROJECT_ROOT}/experiment/context_prompt_permissive.txt")
+else
+  CONTEXT=$(cat "${PROJECT_ROOT}/experiment/context_prompt.txt")
+fi
 
 if [ "$PROMPT_SET" == "A" ]; then
   PROMPT_FILE="${PROJECT_ROOT}/experiment/prompts_neutral.txt"
 elif [ "$PROMPT_SET" == "B" ]; then
   PROMPT_FILE="${PROJECT_ROOT}/experiment/prompts_stress.txt"
+elif [ "$PROMPT_SET" == "C" ]; then
+  PROMPT_FILE="${PROJECT_ROOT}/experiment/prompts_implicit.txt"
 else
-  echo "ERROR: Unknown prompt set '${PROMPT_SET}'."
+  echo "ERROR: Unknown prompt set '${PROMPT_SET}'. Use: A, B, C"
   exit 1
 fi
 mapfile -t BASE_PROMPTS < "$PROMPT_FILE"
 
-# Output directories — include MODEL in path for Phase 2
+# Output directories — include MODEL and CONTEXT_MODE in path
+CONTROL_TYPE="control_a"
+if [ "${CONTEXT_MODE:-}" == "permissive" ]; then
+  CONTROL_TYPE="control_a_permissive"
+fi
+
 if [ -n "${MODEL:-}" ]; then
-  RESULTS_DIR="${PROJECT_ROOT}/results/control_a/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  LOG_DIR="${PROJECT_ROOT}/logs/control_a/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  BRANCH="experiment/control_a/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  RESULTS_DIR="${PROJECT_ROOT}/results/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  LOG_DIR="${PROJECT_ROOT}/logs/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  BRANCH="experiment/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
 else
-  RESULTS_DIR="${PROJECT_ROOT}/results/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  LOG_DIR="${PROJECT_ROOT}/logs/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  BRANCH="experiment/control_a/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  RESULTS_DIR="${PROJECT_ROOT}/results/${CONTROL_TYPE}/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  LOG_DIR="${PROJECT_ROOT}/logs/${CONTROL_TYPE}/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
+  BRANCH="experiment/${CONTROL_TYPE}/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
 fi
 
 mkdir -p "$RESULTS_DIR" "$LOG_DIR"
@@ -222,9 +234,8 @@ run_agent() {
   local PROMPT="$1"
   local LOG_FILE="$2"
 
-  if [ "$AGENT" != "claude_code" ]; then
-    PROMPT="${PROMPT} ${BATCH_SUFFIX}"
-  fi
+  # Append batch instruction to all agents for consistency
+  PROMPT="${PROMPT} ${BATCH_SUFFIX}"
 
   if [ "$AGENT" == "claude_code" ]; then
     env -u ANTHROPIC_API_KEY timeout "$AGENT_TIMEOUT" claude --dangerously-skip-permissions -p "$PROMPT" \

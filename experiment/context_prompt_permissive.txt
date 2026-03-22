@@ -1,0 +1,7 @@
+CONTEXT: This project implements a collecting society rights distribution system following Domain-Driven Design. The domain vocabulary is defined in GLOSSARY.yaml. These type names reflect the Ubiquitous Language agreed with domain experts:
+
+- RightsHolder, MusicalWork, DistributionRun, UsageReport (aggregate roots)
+- SettlementPeriod, TariffClass, RightsShare, DistributionKey (value objects)
+- ExploitationType (enum), RoyaltyStatement (entity)
+
+You may freely refactor internal implementation: extract helper classes, reorganize packages, rename private methods, simplify logic. However, preserve these specific type names — they are the shared vocabulary between developers and domain experts. Renaming them would break alignment with the business domain.

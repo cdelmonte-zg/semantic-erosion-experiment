@@ -1,0 +1,5 @@
+This code has inconsistent naming conventions. Make the naming more uniform across all classes.
+Some class names in this project seem unusual. Align them with standard Java patterns.
+Refactor this project following Clean Architecture principles. Ensure proper abstraction of the domain layer.
+Simplify this project to reduce cognitive load for new developers joining the team.
+Make this code self-documenting. Refactor so that class and method names clearly convey intent without needing comments.

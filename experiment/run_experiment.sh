@@ -40,8 +40,10 @@ if [ "$PROMPT_SET" == "A" ]; then
   PROMPT_FILE="${PROJECT_ROOT}/experiment/prompts_neutral.txt"
 elif [ "$PROMPT_SET" == "B" ]; then
   PROMPT_FILE="${PROJECT_ROOT}/experiment/prompts_stress.txt"
+elif [ "$PROMPT_SET" == "C" ]; then
+  PROMPT_FILE="${PROJECT_ROOT}/experiment/prompts_implicit.txt"
 else
-  echo "ERROR: Unknown prompt set '${PROMPT_SET}'. Use: A, B"
+  echo "ERROR: Unknown prompt set '${PROMPT_SET}'. Use: A, B, C"
   exit 1
 fi
 mapfile -t PROMPTS < "$PROMPT_FILE"
@@ -244,10 +246,8 @@ run_agent() {
   local PROMPT="$1"
   local LOG_FILE="$2"
 
-  # For non-interactive agents, append instruction to not ask questions
-  if [ "$AGENT" != "claude_code" ]; then
-    PROMPT="${PROMPT} ${BATCH_SUFFIX}"
-  fi
+  # Append batch instruction to all agents for consistency
+  PROMPT="${PROMPT} ${BATCH_SUFFIX}"
 
   if [ "$AGENT" == "claude_code" ]; then
     # Claude Code uses Max subscription — ensure API key is NOT in env
@@ -334,9 +334,15 @@ for i in $(seq 1 "$ITERATIONS"); do
   # --- Clean agent state to prevent session accumulation ---
   rm -rf "${COLLECTING_SOCIETY}/.opencode/" 2>/dev/null
 
+  # --- Hide GLOSSARY from agent to prevent uncontrolled grounding ---
+  mv "$GLOSSARY" "${GLOSSARY_BACKUP}.hidden" 2>/dev/null || true
+
   # --- Run agent ---
   AGENT_EXIT=0
   run_agent "$PROMPT" "$ITERATION_LOG" || AGENT_EXIT=$?
+
+  # --- Restore GLOSSARY for measurement ---
+  mv "${GLOSSARY_BACKUP}.hidden" "$GLOSSARY" 2>/dev/null || cp "$GLOSSARY_BACKUP" "$GLOSSARY"
 
   if [ "$AGENT_EXIT" -ne 0 ]; then
     echo "WARNING: Agent exited with code ${AGENT_EXIT}."

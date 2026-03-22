@@ -60,6 +60,7 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
   NUM_RUNS=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx]['runs'])")
   RUN_MODEL=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx].get('model', ''))")
   RUN_PHASE=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx].get('phase', 1))")
+  RUN_CONTEXT_MODE=$(echo "$RUNS_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)[$idx].get('context_mode', ''))")
 
   for run_num in $(seq 1 "$NUM_RUNS"); do
     # Determine results directory using standardized paths
@@ -74,7 +75,11 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
       RESULTS_DIR="results/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET}/run-${run_num}"
     elif [ "$TYPE" == "control_a" ]; then
       SCRIPT="./experiment/run_control_a.sh"
-      RESULTS_DIR="results/control_a/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET}/run-${run_num}"
+      CONTROL_DIR="control_a"
+      if [ "$RUN_CONTEXT_MODE" == "permissive" ]; then
+        CONTROL_DIR="control_a_permissive"
+      fi
+      RESULTS_DIR="results/${CONTROL_DIR}/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET}/run-${run_num}"
     fi
 
     # Check if already complete — validate results contain preservation_score key
@@ -99,9 +104,9 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
       continue
     fi
 
-    # Execute — pass MODEL env var for Phase 2 model override
+    # Execute — pass MODEL and CONTEXT_MODE env vars
     RUN_EXIT=0
-    MODEL="${RUN_MODEL:-}" "$SCRIPT" "$AGENT" "$PROMPT_SET" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"
+    MODEL="${RUN_MODEL:-}" CONTEXT_MODE="${RUN_CONTEXT_MODE:-}" "$SCRIPT" "$AGENT" "$PROMPT_SET" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"
     RUN_EXIT=${PIPESTATUS[0]}
     if [ "$RUN_EXIT" -eq 0 ]; then
       COMPLETED=$((COMPLETED + 1))
