@@ -216,11 +216,12 @@ def measure(glossary_path: str, source_root: str,
 
         elif initial_state == "latent":
             latent_total += 1
+            # All latent terms contribute to ES denominator (fixed base)
+            es_denominator += weight
 
             if loc_weight >= 1.0:
                 # Latent term appeared as a type -> CORRECTLY_MATERIALIZED
                 latent_extracted += 1
-                es_denominator += weight
                 es_numerator += weight * 1.0
                 results[domain_term] = {
                     "state": "CORRECTLY_MATERIALIZED",
@@ -237,7 +238,6 @@ def measure(glossary_path: str, source_root: str,
                 if eroded_to:
                     # Extracted with wrong name -> ERODED
                     latent_extracted += 1
-                    es_denominator += weight
                     es_numerator += 0.0  # eroded emergence = 0
                     distance = 0.0
                     if compute_distance:
@@ -252,6 +252,7 @@ def measure(glossary_path: str, source_root: str,
                     }
                 else:
                     # Still latent -- not extracted at all
+                    # es_numerator += 0 (implicit)
                     results[domain_term] = {
                         "state": "LATENT",
                         "current_name": None,
@@ -261,7 +262,7 @@ def measure(glossary_path: str, source_root: str,
                     }
 
     ps = round(ps_numerator / ps_denominator, 4) if ps_denominator > 0 else 1.0
-    es = round(es_numerator / es_denominator, 4) if es_denominator > 0 else None
+    es = round(es_numerator / es_denominator, 4) if es_denominator > 0 else 0.0
     extraction_ratio = round(latent_extracted / latent_total, 4) if latent_total > 0 else 0.0
 
     return {

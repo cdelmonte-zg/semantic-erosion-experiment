@@ -5,7 +5,7 @@
   "run": 3,
   "commit": "2829b20",
   "preservation_score": 1.0,
-  "emergence_score": 1.0,
+  "emergence_score": 0.75,
   "extraction_ratio": 0.75,
   "latent_extracted": 3,
   "latent_total": 4,
@@ -99,5 +99,6 @@
   },
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "emergence_score_v41_original": 1.0
 }

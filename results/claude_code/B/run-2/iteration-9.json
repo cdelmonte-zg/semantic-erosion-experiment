@@ -5,7 +5,7 @@
   "run": 2,
   "commit": "511cb21",
   "preservation_score": 0.7692,
-  "emergence_score": 1.0,
+  "emergence_score": 0.25,
   "extraction_ratio": 0.25,
   "latent_extracted": 1,
   "latent_total": 4,
@@ -133,5 +133,6 @@
     "total_files_changed": 15,
     "insertions": 182,
     "deletions": 183
-  }
+  },
+  "emergence_score_v41_original": 1.0
 }

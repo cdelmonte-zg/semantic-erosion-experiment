@@ -75,8 +75,11 @@ def plot_erosion_curves(results_dir: str, agents: list[str],
 
         if len(runs) == 1:
             # Single run — plot as simple line
-            iterations = [0] + [r["iteration"] for r in runs[0]]
-            values = [1.0] + [r[metric] for r in runs[0]]
+            # Use iteration 0 value if present, otherwise default to 1.0
+            baseline = next((r[metric] for r in runs[0] if r["iteration"] == 0), 1.0)
+            non_baseline = [r for r in runs[0] if r["iteration"] > 0]
+            iterations = [0] + [r["iteration"] for r in non_baseline]
+            values = [baseline] + [r[metric] for r in non_baseline]
             ax.plot(iterations, values, marker="o", label=agent,
                     color=colors[i % len(colors)], linestyle=styles[i % len(styles)],
                     linewidth=2, markersize=5)
@@ -86,7 +89,8 @@ def plot_erosion_curves(results_dir: str, agents: list[str],
             all_values = np.full((len(runs), max_iter + 1), np.nan)
 
             for r_idx, run in enumerate(runs):
-                all_values[r_idx, 0] = 1.0  # baseline
+                # Use iteration 0 value if present, otherwise default to 1.0
+                all_values[r_idx, 0] = next((r[metric] for r in run if r["iteration"] == 0), 1.0)
                 for result in run:
                     it = result["iteration"]
                     if it <= max_iter:

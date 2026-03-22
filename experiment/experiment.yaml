@@ -1,8 +1,7 @@
-# Experiment configuration v4.1
+# Experiment configuration v4.2
 # Phase 1: vary agent, fix model (Claude Sonnet 4.6)
 # Phase 2: fix agent (OpenCode), vary model
-# Claude Code: 3 runs (free, Max subscription) for variance analysis
-# OpenCode/OpenHands: 1 run (API, cost-constrained)
+# 1 run per agent (multiple runs from testlauf kept in results/)
 
 iterations: 10
 max_fix_attempts: 3
@@ -15,29 +14,26 @@ runs:
   # ── Phase 1: Isolate the agent ──
   # All use Claude Sonnet 4.6
 
-  # Claude Code — 3 runs (free via Max subscription)
   - agent: claude_code
     type: erosion
     prompt_set: A
-    runs: 3
+    runs: 1
 
   - agent: claude_code
     type: erosion
     prompt_set: B
-    runs: 3
+    runs: 1
 
-  # OpenCode — already paid for 3 runs Set A
   - agent: opencode
     type: erosion
     prompt_set: A
-    runs: 3
+    runs: 1
 
   - agent: opencode
     type: erosion
     prompt_set: B
     runs: 1
 
-  # OpenHands — 1 run each (~$7/run)
   - agent: openhands
     type: erosion
     prompt_set: A
@@ -48,11 +44,11 @@ runs:
     prompt_set: B
     runs: 1
 
-  # Control: Claude Code with domain context (free)
+  # Control: Claude Code with domain context
   - agent: claude_code
     type: control_a
     prompt_set: A
-    runs: 3
+    runs: 1
 
   # ── Phase 2: Isolate the model ──
   # All use OpenCode as agent, vary model via MODEL env var
@@ -75,13 +71,15 @@ runs:
     phase: 2
     runs: 1
 
-  # Qwen3-Coder 30B (local, free) — DISABLED: OpenCode config issues with Ollama
-  # - agent: opencode
-  #   type: erosion
-  #   prompt_set: A
-  #   model: qwen3-coder
-  #   phase: 2
-  #   runs: 1
+  # Qwen3-Coder 30B (local, free) — Set A only
+  # Set B disabled: Qwen3 times out on every iteration (20min timeout too short for local 30B)
+  # Control A disabled: no erosion to mitigate
+  - agent: opencode
+    type: erosion
+    prompt_set: A
+    model: qwen3-coder
+    phase: 2
+    runs: 1
 
   # - agent: opencode
   #   type: erosion
@@ -98,7 +96,7 @@ runs:
     phase: 2
     runs: 1
 
-  # Control: OpenCode + Qwen3 with domain context (free) — DISABLED
+  # Control: OpenCode + Qwen3 disabled — no erosion to mitigate
   # - agent: opencode
   #   type: control_a
   #   prompt_set: A

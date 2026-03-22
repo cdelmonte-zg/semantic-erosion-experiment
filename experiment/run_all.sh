@@ -83,8 +83,8 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
       RESULT_COUNT=$(find "$RESULTS_DIR" -name "iteration-*.json" -exec python3 -c "import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if 'preservation_score' in d else 1)" {} \; -print 2>/dev/null | wc -l)
     fi
 
-    # Skip if at least ITERATIONS-1 valid results (allows for skipped iterations)
-    SKIP_THRESHOLD=$(( ITERATIONS - 1 ))
+    # Skip if all iterations (0..ITERATIONS) have valid results
+    SKIP_THRESHOLD=$(( ITERATIONS + 1 ))
     if [ "$FORCE" == "false" ] && [ "$RESULT_COUNT" -ge "$SKIP_THRESHOLD" ]; then
       log "SKIP: ${TYPE}/${AGENT}/${PROMPT_SET} run ${run_num} — already has ${RESULT_COUNT} results"
       SKIPPED=$((SKIPPED + 1))
@@ -100,17 +100,15 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
     fi
 
     # Execute — pass MODEL env var for Phase 2 model override
-    if [ -n "$RUN_MODEL" ]; then
-      RUN_CMD="MODEL=\"$RUN_MODEL\" $SCRIPT \"$AGENT\" \"$PROMPT_SET\" \"$ITERATIONS\" \"$run_num\""
-    else
-      RUN_CMD="$SCRIPT \"$AGENT\" \"$PROMPT_SET\" \"$ITERATIONS\" \"$run_num\""
-    fi
-    if eval "$RUN_CMD" 2>&1 | tee -a "$LOG_FILE"; then
+    RUN_EXIT=0
+    MODEL="${RUN_MODEL:-}" "$SCRIPT" "$AGENT" "$PROMPT_SET" "$ITERATIONS" "$run_num" 2>&1 | tee -a "$LOG_FILE"
+    RUN_EXIT=${PIPESTATUS[0]}
+    if [ "$RUN_EXIT" -eq 0 ]; then
       COMPLETED=$((COMPLETED + 1))
       log "${RUN_LABEL} — COMPLETED"
     else
       FAILED=$((FAILED + 1))
-      log "${RUN_LABEL} — FAILED (exit code $?)"
+      log "${RUN_LABEL} — FAILED (exit code $RUN_EXIT)"
     fi
 
     log ""

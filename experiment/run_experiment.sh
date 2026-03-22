@@ -97,19 +97,44 @@ export GOOGLE_GENERATIVE_AI_API_KEY="${GEMINI_API_KEY:-}"
 # --- Resume support: check for existing results ---
 LAST_COMPLETED=0
 if [ -d "$RESULTS_DIR" ]; then
-  for f in "$RESULTS_DIR"/iteration-*.json; do
-    [ -f "$f" ] || continue
-    iter_num=$(python3 -c "import json; d=json.load(open('$f')); print(d.get('iteration', -1))" 2>/dev/null)
-    status=$(python3 -c "import json; d=json.load(open('$f')); print(d.get('status', 'ok'))" 2>/dev/null)
-    if [ "$status" == "compilation_failure" ] || [ "$status" == "skipped_due_to_prior_failure" ]; then
-      echo "Run previously terminated at iteration $iter_num (${status}). Cannot resume."
-      exit 0
-    fi
-    has_ps=$(python3 -c "import json; d=json.load(open('$f')); print('yes' if 'preservation_score' in d else 'no')" 2>/dev/null)
-    if [ "$has_ps" == "yes" ] && [ "$iter_num" -gt "$LAST_COMPLETED" ] 2>/dev/null; then
-      LAST_COMPLETED=$iter_num
-    fi
-  done
+  # Read results using a helper to avoid spawning python per-file
+  eval "$(python3 -c "
+import json, glob, sys, os
+results_dir = sys.argv[1]
+last = 0
+failed_at = -1
+for f in sorted(glob.glob(os.path.join(results_dir, 'iteration-*.json')),
+                key=lambda x: int(x.rsplit('iteration-')[1].split('.')[0])):
+    try:
+        d = json.load(open(f))
+    except Exception:
+        continue
+    it = d.get('iteration', -1)
+    status = d.get('status', 'ok')
+    if status in ('compilation_failure', 'skipped_due_to_prior_failure'):
+        if failed_at < 0:
+            failed_at = it
+        continue
+    if 'preservation_score' in d and it > last:
+        last = it
+print(f'LAST_COMPLETED={last}')
+print(f'FAILED_AT={failed_at}')
+" "$RESULTS_DIR" 2>/dev/null)"
+
+  if [ "${FAILED_AT:--1}" -ge 0 ]; then
+    echo "Previous run had compilation failure at iteration ${FAILED_AT}."
+    echo "Cleaning failed iterations and retrying from iteration ${FAILED_AT}..."
+    # Remove failed and skipped iteration files so we can retry
+    for f in "$RESULTS_DIR"/iteration-*.json; do
+      [ -f "$f" ] || continue
+      iter_num=$(python3 -c "import json; print(json.load(open('$f')).get('iteration', -1))" 2>/dev/null)
+      if [ "$iter_num" -ge "$FAILED_AT" ] 2>/dev/null; then
+        rm -f "$f"
+      fi
+    done
+    LAST_COMPLETED=$(( FAILED_AT - 1 ))
+    [ "$LAST_COMPLETED" -lt 0 ] && LAST_COMPLETED=0
+  fi
 fi
 
 if [ "$LAST_COMPLETED" -gt 0 ]; then
@@ -117,26 +142,27 @@ if [ "$LAST_COMPLETED" -gt 0 ]; then
   # Try to checkout the branch with previous work
   if git rev-parse "$BRANCH" >/dev/null 2>&1; then
     if ! git checkout "$BRANCH" 2>/dev/null; then
-      echo "WARNING: Could not checkout branch $BRANCH, starting fresh"
-      LAST_COMPLETED=0
+      echo "ERROR: Could not checkout branch $BRANCH. Clean working tree and retry."
+      exit 1
     fi
   else
-    echo "WARNING: Branch $BRANCH not found, starting from baseline"
-    LAST_COMPLETED=0
+    echo "ERROR: Branch $BRANCH not found but results exist. Clean results dir to restart."
+    exit 1
   fi
 fi
 
 if [ "$LAST_COMPLETED" -eq 0 ]; then
   # Fresh start from baseline
-  if git rev-parse "v0" >/dev/null 2>&1; then
-    git checkout -B "$BRANCH" v0 2>/dev/null || true
-    rm -rf src/
-    git checkout v0 -- src/ pom.xml
-    git add -A && git reset HEAD --quiet
-  else
+  if ! git rev-parse "v0" >/dev/null 2>&1; then
     echo "ERROR: Tag 'v0' not found."
     exit 1
   fi
+  if ! git checkout -B "$BRANCH" v0; then
+    echo "ERROR: Could not checkout baseline. Clean working tree first."
+    exit 1
+  fi
+  git checkout v0 -- src/ pom.xml
+  git add src/ pom.xml && git reset HEAD --quiet
   echo ""
   echo "Baseline checked out. Starting iterations..."
 else
@@ -144,14 +170,18 @@ else
 fi
 echo ""
 
-# --- Backup GLOSSARY.yaml (immutable ground truth) ---
+# --- Backup GLOSSARY.yaml (immutable ground truth from v0) ---
 GLOSSARY_BACKUP="${PROJECT_ROOT}/.glossary_backup.yaml"
-cp "$GLOSSARY" "$GLOSSARY_BACKUP"
+# Always restore from v0 tag to prevent using a previously tampered copy
+git show v0:collecting-society/GLOSSARY.yaml > "$GLOSSARY_BACKUP" 2>/dev/null || cp "$GLOSSARY" "$GLOSSARY_BACKUP"
+cp "$GLOSSARY_BACKUP" "$GLOSSARY"
 GLOSSARY_HASH=$(sha256sum "$GLOSSARY" | awk '{print $1}')
+
+# --- Activate venv once ---
+source "$VENV"
 
 # --- Baseline measurement (iteration 0) — skip if resuming ---
 if [ "$LAST_COMPLETED" -eq 0 ]; then
-  source "$VENV"
   python "${PROJECT_ROOT}/experiment/measure_fidelity.py" \
     --glossary "$GLOSSARY" \
     --source "$SOURCE" \
@@ -202,12 +232,13 @@ run_agent() {
       local OLLAMA_MODEL_NAME="${OC_MODEL#ollama/}"
       cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
 {
+  "\$schema": "https://opencode.ai/config.json",
   "model": "$OC_MODEL",
   "provider": {
     "ollama": {
       "npm": "@ai-sdk/openai-compatible",
       "name": "Ollama",
-      "options": {"baseURL": "http://localhost:11434/v1"},
+      "options": {"baseURL": "http://localhost:11434/v1", "timeout": 600000},
       "models": {"$OLLAMA_MODEL_NAME": {"name": "$OLLAMA_MODEL_NAME"}}
     }
   }
@@ -215,7 +246,7 @@ run_agent() {
 OCEOF
     else
       cat > "${COLLECTING_SOCIETY}/opencode.json" << OCEOF
-{"model": "$OC_MODEL"}
+{"\$schema": "https://opencode.ai/config.json", "model": "$OC_MODEL"}
 OCEOF
     fi
     ANTHROPIC_API_KEY="$OC_KEY" OPENAI_API_KEY="$OC_KEY" \
@@ -287,7 +318,6 @@ for i in $(seq 1 "$ITERATIONS"); do
   if git diff --quiet && git diff --cached --quiet; then
     echo "No changes in iteration ${i}. Measuring current state."
     # Agent ran but decided no changes needed — still measure PS/ES
-    source "$VENV"
     python "${PROJECT_ROOT}/experiment/measure_fidelity.py" \
       --glossary "$GLOSSARY" \
       --source "$SOURCE" \
@@ -297,16 +327,17 @@ for i in $(seq 1 "$ITERATIONS"); do
       --run "$RUN_NUMBER" \
       --output "$ITERATION_RESULT"
     python3 -c "
-import json
-with open('${ITERATION_RESULT}') as f:
+import json, sys
+result_file, tampered = sys.argv[1], sys.argv[2] == 'true'
+with open(result_file) as f:
     data = json.load(f)
 data['changes_applied'] = 0
 data['compile_error_count'] = 0
 data['compile_autofix'] = 'none'
-data['glossary_tampered'] = True if '${GLOSSARY_TAMPERED}' == 'true' else False
-with open('${ITERATION_RESULT}', 'w') as f:
+data['glossary_tampered'] = tampered
+with open(result_file, 'w') as f:
     json.dump(data, f, indent=2)
-"
+" "$ITERATION_RESULT" "$GLOSSARY_TAMPERED"
     echo ""
     continue
   fi
@@ -318,7 +349,7 @@ with open('${ITERATION_RESULT}', 'w') as f:
   MAX_FIX_ATTEMPTS=3
   FIX_ATTEMPT=0
 
-  COMPILE_OUTPUT=$(mvn compile 2>&1)
+  COMPILE_OUTPUT=$(mvn compile 2>&1) || true
   if echo "$COMPILE_OUTPUT" | grep -q "BUILD SUCCESS"; then
     COMPILE_OK=true
   else
@@ -332,7 +363,7 @@ with open('${ITERATION_RESULT}', 'w') as f:
       FIX_PROMPT="The previous refactoring broke compilation. Fix these errors without reverting the renames: $(echo "$COMPILE_OUTPUT" | tail -30)"
       run_agent "$FIX_PROMPT" "${LOG_DIR}/fix-attempt-${i}-${FIX_ATTEMPT}.txt" || true
 
-      COMPILE_OUTPUT=$(mvn compile 2>&1)
+      COMPILE_OUTPUT=$(mvn compile 2>&1) || true
       if echo "$COMPILE_OUTPUT" | grep -q "BUILD SUCCESS"; then
         COMPILE_OK=true
         COMPILE_AUTOFIX="succeeded_attempt_${FIX_ATTEMPT}"
@@ -443,7 +474,6 @@ print(f'  Changes: +{insertions}/-{deletions} in {analysis[\"total_files_changed
 
   # --- Measure ---
   echo "Measuring..."
-  source "$VENV"
   python "${PROJECT_ROOT}/experiment/measure_fidelity.py" \
     --glossary "$GLOSSARY" \
     --source "$SOURCE" \
@@ -455,22 +485,24 @@ print(f'  Changes: +{insertions}/-{deletions} in {analysis[\"total_files_changed
 
   # Inject metadata
   python3 -c "
-import json
-with open('${ITERATION_RESULT}') as f:
+import json, sys, os
+result_file = sys.argv[1]
+compile_errors = int(sys.argv[2])
+compile_autofix = sys.argv[3]
+tampered = sys.argv[4] == 'true'
+change_file = sys.argv[5]
+with open(result_file) as f:
     data = json.load(f)
-data['compile_error_count'] = ${COMPILE_ERROR_COUNT}
-data['compile_autofix'] = '${COMPILE_AUTOFIX}'
-data['glossary_tampered'] = True if '${GLOSSARY_TAMPERED}' == 'true' else False
+data['compile_error_count'] = compile_errors
+data['compile_autofix'] = compile_autofix
+data['glossary_tampered'] = tampered
 data['changes_applied'] = 1
-# Inject change analysis if available
-import os
-change_file = '${CHANGE_ANALYSIS}'
 if os.path.exists(change_file):
     with open(change_file) as cf:
         data['change_analysis'] = json.load(cf)
-with open('${ITERATION_RESULT}', 'w') as f:
+with open(result_file, 'w') as f:
     json.dump(data, f, indent=2)
-"
+" "$ITERATION_RESULT" "$COMPILE_ERROR_COUNT" "$COMPILE_AUTOFIX" "$GLOSSARY_TAMPERED" "$CHANGE_ANALYSIS"
 
   echo ""
 done

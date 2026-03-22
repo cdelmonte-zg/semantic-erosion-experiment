@@ -5,7 +5,7 @@
   "run": 2,
   "commit": "ee7fbb6",
   "preservation_score": 0.8846,
-  "emergence_score": 1.0,
+  "emergence_score": 0.5,
   "extraction_ratio": 0.5,
   "latent_extracted": 2,
   "latent_total": 4,
@@ -131,5 +131,6 @@
     "total_files_changed": 13,
     "insertions": 96,
     "deletions": 95
-  }
+  },
+  "emergence_score_v41_original": 1.0
 }

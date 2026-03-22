@@ -5,7 +5,7 @@
   "run": 1,
   "commit": "3d24497",
   "preservation_score": 0.0,
-  "emergence_score": null,
+  "emergence_score": 0.0,
   "extraction_ratio": 0.0,
   "latent_extracted": 0,
   "latent_total": 4,
@@ -129,5 +129,6 @@
     "total_files_changed": 27,
     "insertions": 480,
     "deletions": 585
-  }
+  },
+  "emergence_score_v41_original": null
 }

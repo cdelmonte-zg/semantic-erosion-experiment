@@ -5,7 +5,7 @@
   "run": 2,
   "commit": "bf5cca3",
   "preservation_score": 0.6923,
-  "emergence_score": 1.0,
+  "emergence_score": 0.75,
   "extraction_ratio": 0.75,
   "latent_extracted": 3,
   "latent_total": 4,
@@ -133,5 +133,6 @@
     "total_files_changed": 11,
     "insertions": 82,
     "deletions": 82
-  }
+  },
+  "emergence_score_v41_original": 1.0
 }

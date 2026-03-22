@@ -5,7 +5,7 @@
   "run": 1,
   "commit": "da5cdcd",
   "preservation_score": 1.0,
-  "emergence_score": null,
+  "emergence_score": 0.0,
   "extraction_ratio": 0.0,
   "latent_extracted": 0,
   "latent_total": 4,
@@ -113,5 +113,6 @@
     "total_files_changed": 5,
     "insertions": 54,
     "deletions": 8
-  }
+  },
+  "emergence_score_v41_original": null
 }
