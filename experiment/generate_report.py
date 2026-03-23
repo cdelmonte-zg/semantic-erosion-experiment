@@ -49,14 +49,14 @@ def discover_runs(results_dir: Path) -> dict:
         for sub in sorted(agent_dir.iterdir()):
             if not sub.is_dir():
                 continue
-            if sub.name in ("A", "B"):
+            if sub.name in ("A", "B", "C"):
                 for run_dir in sorted(sub.glob("run-*")):
                     data = load_run(run_dir)
                     if data:
                         runs[(agent_dir.name, "", sub.name, run_dir.name)] = data
             else:
                 for ps_dir in sorted(sub.iterdir()):
-                    if not ps_dir.is_dir() or ps_dir.name not in ("A", "B"):
+                    if not ps_dir.is_dir() or ps_dir.name not in ("A", "B", "C"):
                         continue
                     for run_dir in sorted(ps_dir.glob("run-*")):
                         data = load_run(run_dir)
@@ -71,7 +71,7 @@ def discover_runs(results_dir: Path) -> dict:
             for sub in sorted(agent_dir.iterdir()):
                 if not sub.is_dir():
                     continue
-                if sub.name in ("A", "B"):
+                if sub.name in ("A", "B", "C"):
                     for run_dir in sorted(sub.glob("run-*")):
                         data = load_run(run_dir)
                         if data:
@@ -279,6 +279,7 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     w("<!-- /AI -->\n")
 
     run_configs = [
+        # Phase 1 + 2: Set A and B
         ("Claude Code", "claude_code", "", "A", 1),
         ("Claude Code", "claude_code", "", "B", 1),
         ("OpenCode (Sonnet 4.6)", "opencode", "", "A", 1),
@@ -289,10 +290,24 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
         ("OpenCode + GPT-5.4", "opencode", "gpt-5.4", "B", 2),
         ("OpenCode + Qwen3 30B", "opencode", "qwen3-coder", "A", 2),
         ("OpenCode + Qwen3 30B", "opencode", "qwen3-coder", "B", 2),
-        ("Control: Claude Code", "control_a/claude_code", "", "A", 1),
-        ("Control: OpenCode+Sonnet", "control_a/opencode", "", "A", 1),
-        ("Control: OpenCode+GPT-5.4", "control_a/opencode", "gpt-5.4", "A", 2),
-        ("Control: OpenCode+Qwen3", "control_a/opencode", "qwen3-coder", "A", 2),
+        # Phase 3: Set C (implicit rename pressure)
+        ("Claude Code", "claude_code", "", "C", 3),
+        ("OpenCode (Sonnet 4.6)", "opencode", "", "C", 3),
+        ("OpenCode + GPT-5.4", "opencode", "gpt-5.4", "C", 3),
+        ("OpenCode + Qwen3 30B", "opencode", "qwen3-coder", "C", 3),
+        # Control A (Set A + context)
+        ("Ctrl-A: Claude Code", "control_a/claude_code", "", "A", 1),
+        ("Ctrl-A: OC+Sonnet", "control_a/opencode", "", "A", 1),
+        ("Ctrl-A: OC+GPT-5.4", "control_a/opencode", "gpt-5.4", "A", 2),
+        ("Ctrl-A: OC+Qwen3", "control_a/opencode", "qwen3-coder", "A", 2),
+        # Control B (Set B + context)
+        ("Ctrl-B: Claude Code", "control_a/claude_code", "", "B", 1),
+        ("Ctrl-B: OC+Sonnet", "control_a/opencode", "", "B", 1),
+        ("Ctrl-B: OC+GPT-5.4", "control_a/opencode", "gpt-5.4", "B", 2),
+        ("Ctrl-B: OC+Qwen3", "control_a/opencode", "qwen3-coder", "B", 2),
+        # Permissive context (Set B + permissive context)
+        ("Permissive: Claude Code", "control_a_permissive/claude_code", "", "B", 1),
+        ("Permissive: OC+GPT-5.4", "control_a_permissive/opencode", "gpt-5.4", "B", 2),
     ]
 
     w("| Agent / Model | Set | PS min | PS final | ES final | Latent | Erosion Onset | +Lines | -Lines | Compile Fixes |")
@@ -401,8 +416,35 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     w("<!-- AI:phase2_analysis -->")
     w("<!-- /AI -->\n")
 
+    # ── Phase 3: Set C ────────────────────────────────────────────────
+    w("## 4. Phase 3 — Set C (Implicit Rename Pressure)\n")
+    w("<!-- AI:setc -->")
+    w("<!-- /AI -->\n")
+
+    # Set C chart: all agents/models (cloud as single, Qwen3 as multi-run)
+    setc_configs = [
+        ("Claude Code", "claude_code", "", "#e74c3c"),
+        ("OpenCode+Sonnet", "opencode", "", "#3498db"),
+        ("OpenCode+GPT-5.4", "opencode", "gpt-5.4", "#9b59b6"),
+        ("OpenCode+Qwen3", "opencode", "qwen3-coder", "#e67e22"),
+    ]
+    setc_multi = []
+    for label, ak, model, color in setc_configs:
+        all_c = [v for k, v in runs.items()
+                 if k[0] == ak and k[1] == model and k[2] == "C"]
+        if all_c:
+            setc_multi.append((label, all_c, color, "-"))
+    if setc_multi:
+        _plot_ps_curves_multi_run(setc_multi,
+                                   "Set C (Implicit Rename Pressure) — Preservation Score",
+                                   fig_dir / "phase3_setC.png")
+    w("![Set C](figures/phase3_setC.png)\n")
+
+    w("<!-- AI:setc_analysis -->")
+    w("<!-- /AI -->\n")
+
     # ── Control A ─────────────────────────────────────────────────────
-    w("## 4. Control A — Domain Context Mitigation\n")
+    w("## 5. Control A — Domain Context Mitigation\n")
 
     control_series = []
     for label, ak, model, ps, color, style in [
@@ -424,20 +466,69 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     w("<!-- AI:control_a -->")
     w("<!-- /AI -->\n")
 
+    # ── Control B (Set B + context) ───────────────────────────────────
+    w("## 6. Control B — Domain Context Under Stress\n")
+
+    controlb_series = []
+    for label, ak, model, ps, color, style in [
+        ("Claude Code Set B (no ctx)", "claude_code", "", "B", "#e74c3c", "--"),
+        ("Claude Code Ctrl-B", "control_a/claude_code", "", "B", "#1abc9c", "-"),
+        ("GPT-5.4 Set B (no ctx)", "opencode", "gpt-5.4", "B", "#9b59b6", "--"),
+        ("GPT-5.4 Ctrl-B", "control_a/opencode", "gpt-5.4", "B", "#8e44ad", "-"),
+        ("Qwen3 Set B (no ctx)", "opencode", "qwen3-coder", "B", "#e67e22", "--"),
+        ("Qwen3 Ctrl-B", "control_a/opencode", "qwen3-coder", "B", "#d35400", "-"),
+    ]:
+        matching = [(k, v) for k, v in runs.items()
+                    if k[0] == ak and k[1] == model and k[2] == ps]
+        if matching:
+            controlb_series.append((label, matching[0][1], color, style))
+    if controlb_series:
+        _plot_ps_curves(controlb_series, "Control B — Domain Context Under Stress Prompts",
+                        fig_dir / "control_b.png")
+        w("![Control B](figures/control_b.png)\n")
+
+    w("<!-- AI:control_b -->")
+    w("<!-- /AI -->\n")
+
+    # ── Permissive Context ────────────────────────────────────────────
+    w("## 7. Permissive Context — Balancing Protection and Refactoring\n")
+
+    perm_series = []
+    for label, ak, model, ps, color, style in [
+        ("Claude Code Set B (no ctx)", "claude_code", "", "B", "#e74c3c", "--"),
+        ("Claude Code Ctrl-B (strict)", "control_a/claude_code", "", "B", "#1abc9c", "-."),
+        ("Claude Code Permissive", "control_a_permissive/claude_code", "", "B", "#2ecc71", "-"),
+        ("GPT-5.4 Set B (no ctx)", "opencode", "gpt-5.4", "B", "#9b59b6", "--"),
+        ("GPT-5.4 Permissive", "control_a_permissive/opencode", "gpt-5.4", "B", "#8e44ad", "-"),
+    ]:
+        matching = [(k, v) for k, v in runs.items()
+                    if k[0] == ak and k[1] == model and k[2] == ps]
+        if matching:
+            perm_series.append((label, matching[0][1], color, style))
+    if perm_series:
+        _plot_ps_curves(perm_series, "Permissive Context — Protection vs Refactoring",
+                        fig_dir / "permissive.png")
+        w("![Permissive Context](figures/permissive.png)\n")
+
+    w("<!-- AI:permissive -->")
+    w("<!-- /AI -->\n")
+
     # ── Refactoring effectiveness ─────────────────────────────────────
-    w("## 5. Refactoring Effectiveness\n")
+    w("## 8. Refactoring Effectiveness\n")
 
     ref_configs = [
         ("CC Set A", "claude_code", "", "A"),
         ("CC Set B", "claude_code", "", "B"),
+        ("CC Set C", "claude_code", "", "C"),
         ("OC+Son Set A", "opencode", "", "A"),
         ("OC+Son Set B", "opencode", "", "B"),
-        ("OH Set A", "openhands", "", "A"),
-        ("OH Set B", "openhands", "", "B"),
+        ("OC+Son Set C", "opencode", "", "C"),
         ("GPT-5.4 Set A", "opencode", "gpt-5.4", "A"),
         ("GPT-5.4 Set B", "opencode", "gpt-5.4", "B"),
+        ("GPT-5.4 Set C", "opencode", "gpt-5.4", "C"),
         ("Qwen3 Set A", "opencode", "qwen3-coder", "A"),
         ("Qwen3 Set B", "opencode", "qwen3-coder", "B"),
+        ("Qwen3 Set C", "opencode", "qwen3-coder", "C"),
     ]
 
     w("| Agent | Set | Active Iters | +Lines | -Lines | Net | Files | Compile Fixes | Glossary Tampered |")
@@ -469,7 +560,7 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     w("<!-- /AI -->\n")
 
     # ── Key Findings placeholder ──────────────────────────────────────
-    w("## 6. Key Findings\n")
+    w("## 9. Key Findings\n")
     w("<!-- AI:findings -->")
     w("<!-- /AI -->\n")
 
@@ -507,14 +598,18 @@ Your task: replace each <!-- AI:xxx --> ... <!-- /AI --> placeholder with
 analytical text (2-5 paragraphs each). Write in English, be concise and precise.
 
 For each section:
-- AI:intro — Explain what the experiment measures, the setup (10 iterations, 2 prompt sets, 3 agents, 3 models)
+- AI:intro — Explain what the experiment measures, the setup (10 iterations, 3 prompt sets A/B/C, 3 agents, 3 models, 31 runs)
 - AI:phase1 — Introduce Phase 1 (vary agent, fix model)
-- AI:phase1_analysis — Analyze Phase 1 results: Set A vs Set B, which agents erode, oscillation patterns
+- AI:phase1_analysis — Analyze Phase 1 results: Set A vs Set B, which agents erode, oscillation patterns. OpenHands produces zero changes (headless mode limitation, not erosion resistance)
 - AI:phase2 — Introduce Phase 2 (fix agent OpenCode, vary model)
 - AI:phase2_analysis — Compare models: erosion aggressiveness, onset timing, latent extraction
-- AI:control_a — Analyze the mitigation: does domain context prevent erosion? Is it universal?
-- AI:refactoring — Analyze refactoring volume: which agents do more work? Is more refactoring correlated with more erosion? Compile fix frequency.
-- AI:findings — 5-7 numbered key findings with evidence from the data
+- AI:setc — Introduce Set C: implicit rename pressure without explicit "rename" keyword. Key question: does erosion require explicit instructions?
+- AI:setc_analysis — Set C results: cloud models (Sonnet, GPT-5.4) show PS=1.0 (no erosion). Qwen3 30B local erodes (PS drops to 0.38). This means smaller models are more susceptible to implicit pressure. Include Qwen3 variance across 3 replicas.
+- AI:control_a — Analyze Control A: domain context prevents erosion but suppresses ALL refactoring (0 changes). Universal across all agents/models.
+- AI:control_b — Analyze Control B: does domain context protect under stress prompts (Set B)? Compare with Set B without context.
+- AI:permissive — Analyze permissive context: does a less restrictive domain context allow refactoring while preventing erosion? Compare strict vs permissive vs no context.
+- AI:refactoring — Analyze refactoring volume across A/B/C. Is more refactoring correlated with more erosion? Compile fix frequency.
+- AI:findings — 7-9 numbered key findings including Set C threshold finding and context inhibition finding
 
 Data summary (JSON):
 ```json
