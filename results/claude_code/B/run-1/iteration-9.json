@@ -1,0 +1,131 @@
+{
+  "agent": "claude_code",
+  "prompt_set": "B",
+  "iteration": 9,
+  "run": 1,
+  "commit": "b281b4c",
+  "preservation_score": 0.1154,
+  "emergence_score": 0.25,
+  "extraction_ratio": 0.25,
+  "latent_extracted": 1,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "ERODED",
+      "current_name": "UsageType",
+      "distance": 0.462,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "MATERIALIZED",
+      "current_name": "RoyaltyStatement",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "SettlementPeriod",
+      "location": "record_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 9,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Criteria.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Run.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/holder/HolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/ReportRepository.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionCriteria.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/holder/RightsHolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunStatus.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/RunStatus.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/holder/RightsHolder.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/holder/Holder.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/usage/Report.java"
+      }
+    ],
+    "total_files_changed": 15,
+    "insertions": 183,
+    "deletions": 183
+  }
+}

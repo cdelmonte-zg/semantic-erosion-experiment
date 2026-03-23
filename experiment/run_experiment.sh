@@ -142,7 +142,7 @@ fi
 if [ "$LAST_COMPLETED" -gt 0 ]; then
   echo "RESUMING from iteration $((LAST_COMPLETED + 1)) (found $LAST_COMPLETED completed iterations)"
   # Clean working tree before checkout (safe: experiment branches are disposable)
-  git checkout . 2>/dev/null; git clean -fd src/ 2>/dev/null
+  git checkout . 2>/dev/null; git clean -fd . 2>/dev/null
   # Try to checkout the branch with previous work
   if git rev-parse "$BRANCH" >/dev/null 2>&1; then
     if ! git checkout "$BRANCH" 2>/dev/null; then
@@ -150,8 +150,9 @@ if [ "$LAST_COMPLETED" -gt 0 ]; then
       exit 1
     fi
   else
-    echo "ERROR: Branch $BRANCH not found but results exist. Clean results dir to restart."
-    exit 1
+    echo "WARNING: Branch $BRANCH not found but results exist. Cleaning results and starting fresh."
+    rm -f "$RESULTS_DIR"/iteration-*.json
+    LAST_COMPLETED=0
   fi
 fi
 
@@ -161,7 +162,7 @@ if [ "$LAST_COMPLETED" -eq 0 ]; then
     echo "ERROR: Tag 'v0' not found."
     exit 1
   fi
-  git checkout . 2>/dev/null; git clean -fd src/ 2>/dev/null
+  git checkout . 2>/dev/null; git clean -fd . 2>/dev/null
   if ! git checkout -B "$BRANCH" v0; then
     echo "ERROR: Could not checkout baseline."
     exit 1
@@ -442,7 +443,7 @@ FEOF
           > "${RESULTS_DIR}/iteration-${j}.json"
       done
 
-      git checkout . 2>/dev/null; git clean -fd src/ 2>/dev/null
+      git checkout . 2>/dev/null; git clean -fd . 2>/dev/null
       git checkout main 2>/dev/null || true
       break
     fi
@@ -554,7 +555,7 @@ with open(result_file, 'w') as f:
 done
 
 # --- Restore working tree to main ---
-git checkout . 2>/dev/null; git clean -fd src/ 2>/dev/null
+git checkout . 2>/dev/null; git clean -fd . 2>/dev/null
 git checkout main 2>/dev/null || true
 
 echo "=== Experiment complete ==="

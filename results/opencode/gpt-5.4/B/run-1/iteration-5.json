@@ -1,0 +1,113 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 5,
+  "run": 1,
+  "commit": "a116856",
+  "preservation_score": 0.0,
+  "emergence_score": 0.0,
+  "extraction_ratio": 0.5,
+  "latent_extracted": 2,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "ERODED",
+      "current_name": "Item",
+      "distance": 0.8138,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "ERODED",
+      "current_name": "ResultEntry",
+      "distance": 0.7169,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "ERODED",
+      "current_name": "DateRange",
+      "distance": 0.6772,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "ERODED",
+      "current_name": "SelectionCriteria",
+      "distance": 0.8657,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 5,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/activity/Activity.java",
+      "src/main/java/dev/cdelmonte/collecting/item/ActivityType.java",
+      "src/main/java/dev/cdelmonte/collecting/item/Item.java",
+      "src/main/java/dev/cdelmonte/collecting/party/Allocation.java",
+      "src/main/java/dev/cdelmonte/collecting/processing/Batch.java",
+      "src/main/java/dev/cdelmonte/collecting/processing/DateRange.java",
+      "src/main/java/dev/cdelmonte/collecting/processing/ProcessingService.java",
+      "src/main/java/dev/cdelmonte/collecting/processing/ResultEntry.java",
+      "src/main/java/dev/cdelmonte/collecting/processing/SelectionCriteria.java"
+    ],
+    "files_renamed": [],
+    "total_files_changed": 9,
+    "insertions": 122,
+    "deletions": 151
+  }
+}

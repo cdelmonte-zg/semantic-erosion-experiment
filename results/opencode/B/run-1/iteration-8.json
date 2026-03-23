@@ -1,0 +1,146 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 8,
+  "run": 1,
+  "commit": "d13d407",
+  "preservation_score": 0.1923,
+  "emergence_score": 0.25,
+  "extraction_ratio": 0.25,
+  "latent_extracted": 1,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "MATERIALIZED",
+      "current_name": "RightsHolder",
+      "location": "class_name",
+      "location_weight": 1.0,
+      "match_type": "exact",
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "ERODED",
+      "current_name": "DistributionJob",
+      "distance": 0.2909,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "ERODED",
+      "current_name": "UsageCategory",
+      "distance": 0.6598,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "CORRECTLY_MATERIALIZED",
+      "current_name": "SettlementPeriod",
+      "location": "class_name",
+      "match_type": "exact",
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 8,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionFilter.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionJobRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/holder/RightsHolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageRecordRepository.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Filter.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/JobRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/holder/HolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/RecordRepository.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Payout.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Tariff.java",
+      "src/main/java/dev/cdelmonte/collecting/rights/Share.java",
+      "src/main/java/dev/cdelmonte/collecting/work/Work.java",
+      "src/main/java/dev/cdelmonte/collecting/work/WorkRepository.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/Job.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionJob.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/Status.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/JobStatus.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/Period.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/holder/Holder.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/holder/RightsHolder.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/usage/Record.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/usage/UsageRecord.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/work/Category.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/work/UsageCategory.java"
+      }
+    ],
+    "total_files_changed": 20,
+    "insertions": 249,
+    "deletions": 249
+  }
+}

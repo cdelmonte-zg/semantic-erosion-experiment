@@ -1,0 +1,137 @@
+{
+  "agent": "opencode",
+  "prompt_set": "B",
+  "iteration": 7,
+  "run": 1,
+  "commit": "0f77c9c",
+  "preservation_score": 0.0,
+  "emergence_score": 0.0,
+  "extraction_ratio": 0.0,
+  "latent_extracted": 0,
+  "latent_total": 4,
+  "materialized_count": 6,
+  "terms": {
+    "RightsHolder": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "MusicalWork": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "DistributionRun": {
+      "state": "ERODED",
+      "current_name": "Job",
+      "distance": 0.7575,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "UsageReport": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 1.0
+    },
+    "ExploitationType": {
+      "state": "ERODED",
+      "current_name": "Category",
+      "distance": 0.7809,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "RoyaltyStatement": {
+      "state": "DISAPPEARED",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "materialized",
+      "weight": 0.6
+    },
+    "SettlementPeriod": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "TariffClass": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "RightsShare": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    },
+    "DistributionKey": {
+      "state": "LATENT",
+      "current_name": null,
+      "match_type": null,
+      "initial_state": "latent",
+      "weight": 0.8
+    }
+  },
+  "compile_error_count": 0,
+  "compile_autofix": "none",
+  "glossary_tampered": false,
+  "changes_applied": 1,
+  "change_analysis": {
+    "iteration": 7,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Distributor.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Filter.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Payout.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Tariff.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/Record.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/RecordRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/work/Category.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionKey.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/PayoutSummary.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/TariffClass.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageRecord.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageRecordRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/work/UsageType.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Job.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/JobRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/holder/Holder.java",
+      "src/main/java/dev/cdelmonte/collecting/holder/HolderRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/work/Work.java",
+      "src/main/java/dev/cdelmonte/collecting/work/WorkRepository.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/Period.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/JobStatus.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/Status.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/rights/RightsShare.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/rights/Share.java"
+      }
+    ],
+    "total_files_changed": 23,
+    "insertions": 472,
+    "deletions": 541
+  }
+}
