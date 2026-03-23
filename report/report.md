@@ -156,3 +156,19 @@ Claude Code and OpenCode+Sonnet occupy the middle ground. Claude Code is consist
 
 **6. OpenHands results are artifacts.** OpenHands produces PS=1.0 under Set B with zero code changes (0 insertions, 0 deletions). This is not erosion resistance -- it is a failure of the headless runtime to execute the refactoring task at all. OpenHands should be excluded from any comparative claims about agent robustness.
 
+## 10. Practical Recommendations
+
+Based on the experimental findings, the following recommendations apply to teams using AI coding agents on DDD codebases:
+
+**1. Don't mention renaming in prompts.** The single strongest predictor of erosion is the prompt. "Improve readability" is safe. "Improve readability and naming" is not. Avoid words like "rename", "simplify names", "better names" in refactoring instructions. Set C shows that even implicit pressure ("make naming more uniform") is safe for cloud models — but not for smaller local models.
+
+**2. Maintain a domain glossary in your repo — but don't rely on it alone.** A GLOSSARY.yaml with domain terms and their DDD roles is valuable documentation. However, our experiment shows two caveats: (a) agents may read it during refactoring, creating an uncontrolled grounding effect (v4.2 vs v4.3 comparison); (b) including it in the prompt as context currently suppresses all refactoring, not just renaming. Use it as documentation for humans; for agents, use targeted CI checks instead.
+
+**3. Implement a CI gate on domain term preservation.** Rather than relying on prompt engineering or glossary context, add an automated check to your pipeline. The `measure_fidelity.py` script in this experiment can serve as a starting point: parse Java identifiers with tree-sitter, match against a glossary, and fail the PR if PS drops below a threshold (e.g., 0.9). This is the only mitigation that protects terminology without inhibiting refactoring.
+
+**4. Be cautious with local/quantized models for domain-sensitive refactoring.** Qwen3-Coder 30B (Q4_K_M quantization) is the only model that erodes under implicit pressure (Set C) and shows high variance across runs. If using local models, increase the number of review iterations and consider running the PS check after each agent session.
+
+**5. Review agent architecture, not just model choice.** The same model (Sonnet 4.6) produces catastrophic erosion under OpenCode but oscillating partial erosion under Claude Code. The agent's planning strategy, context management, and tool-use patterns matter as much as the underlying model. When evaluating agents for DDD projects, test with stress prompts on a synthetic codebase before deploying on production code.
+
+**6. Monitor for oscillation, not just final state.** GPT-5.4 ends at PS=1.0 but oscillates wildly (6 direction changes, 12,666 total lines changed). A codebase that looks correct at the end of a session may have been rewritten multiple times during it, generating confusing git history and potentially breaking downstream consumers. Track PS per-iteration, not just at the end.
+
