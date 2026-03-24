@@ -156,7 +156,6 @@ The results point toward a practical mitigation strategy: embedding domain gloss
 | OC+Son Set A | A | 10/10 | +1299 | -891 | +408 | 81 | 0 | 0 |
 | OC+Son Set B | B | 10/10 | +3438 | -3395 | +43 | 163 | 0 | 0 |
 | OC+Son Set C | C | 8/10 | +1402 | -1252 | +150 | 102 | 0 | 0 |
-
 | GPT-5.4 Set A | A | 10/10 | +1688 | -971 | +717 | 78 | 0 | 0 |
 | GPT-5.4 Set B | B | 10/10 | +6377 | -6289 | +88 | 251 | 0 | 0 |
 | GPT-5.4 Set C | C | 10/10 | +1794 | -1663 | +131 | 132 | 0 | 0 |
@@ -172,7 +171,7 @@ Refactoring volume varies dramatically across configurations and correlates with
 
 **GPT-5.4 is the most prolific refactorer** across all prompt sets, consistently producing 2–3× the volume of other models. Under Set B, it touches 251 files — more than any other run. Despite this extreme volume, GPT-5.4 recovers to PS = 1.0 by iteration 10, demonstrating that high refactoring throughput does not necessarily cause permanent erosion.
 
-**Qwen3 is the most conservative.** With the fewest active iterations (7–9 out of 10), lowest line counts, and the only model requiring compile fixes (6 in Set B, 5 in Set C), Qwen3 struggles with consistent refactoring execution. Its Set C net of −304 lines (more deletions than insertions) suggests destructive modifications rather than constructive refactoring. Paradoxically, despite being the least prolific refactorer, Qwen3 is the most erosion-prone model — it is the only one to erode under Set C and has the most compile failures. Lower refactoring capability correlates with higher erosion risk, not lower.
+**Qwen3 is the most conservative.** With the fewest active iterations (7–8 out of 10), lowest line counts, and the only configuration requiring compile fixes (6 in Set B, 5 in Set C), Qwen3 struggles with consistent refactoring execution. Its Set C net of −304 lines (more deletions than insertions) suggests destructive modifications rather than constructive refactoring. Paradoxically, despite being the least prolific refactorer, Qwen3 is the most erosion-prone configuration — it is the only one to erode under Set C and has the most compile failures. Within this experiment, lower refactoring capability coincided with higher erosion risk.
 
 **No agent tampered with the glossary.** Across all 28 runs, the glossary_tampered flag is 0 in every case. Agents never directly modify the domain glossary file, even when they rename the terms the glossary defines. This indicates that erosion operates at the code level, not the documentation level — agents rename classes and interfaces without updating the associated domain documentation.
 
