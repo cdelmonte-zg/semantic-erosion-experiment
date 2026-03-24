@@ -93,7 +93,7 @@ python experiment/generate_report.py
 
 ### Reproducing the Published Results
 
-The repository includes all 28 run results (308 iteration JSONs). To regenerate the report and charts from existing data without re-running experiments:
+The repository includes all 28 run results (308 JSON files: 28 runs × 11 per run, including the iteration-0 baseline measurement). To regenerate the report and charts from existing data without re-running experiments:
 
 ```bash
 source .venv/bin/activate
