@@ -99,24 +99,15 @@
   "compile_error_count": 0,
   "compile_autofix": "succeeded_attempt_1",
   "glossary_tampered": false,
-  "changes_applied": 1,
+  "changes_applied": 0,
   "change_analysis": {
     "iteration": 6,
-    "files_added": [
-      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsShare.java"
-    ],
+    "files_added": [],
     "files_deleted": [],
-    "files_modified": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java",
-      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
-      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java"
-    ],
+    "files_modified": [],
     "files_renamed": [],
-    "total_files_changed": 7,
-    "insertions": 119,
-    "deletions": 49
+    "total_files_changed": 0,
+    "insertions": 0,
+    "deletions": 0
   }
 }

@@ -98,29 +98,18 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 1,
+  "changes_applied": 0,
   "compile_error_count": 0,
   "compile_autofix": "none",
   "glossary_tampered": false,
   "change_analysis": {
     "iteration": 10,
-    "files_added": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyCalculationContext.java"
-    ],
+    "files_added": [],
     "files_deleted": [],
-    "files_modified": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionKey.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/RightsShare.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java",
-      "src/main/java/dev/cdelmonte/collecting/musicalwork/TariffClass.java",
-      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java"
-    ],
+    "files_modified": [],
     "files_renamed": [],
-    "total_files_changed": 9,
-    "insertions": 74,
-    "deletions": 23
+    "total_files_changed": 0,
+    "insertions": 0,
+    "deletions": 0
   }
 }

@@ -19,7 +19,7 @@ The experiment spans 2 agents (Claude Code, OpenCode), 3 models (Claude Sonnet 4
 | OpenCode + GPT-5.4 | A | 1.00 | 1.00 | 0.75 | 3/4 | — | +1688 | -971 | 0 |
 | OpenCode + GPT-5.4 | B | 0.00 | 1.00 | 0.75 | 3/4 | iter 2 | +6377 | -6289 | 0 |
 | OpenCode + Qwen3 30B | A | 1.00 | 1.00 | 0.75 | 3/4 | — | +515 | -405 | 0 |
-| OpenCode + Qwen3 30B | B | 0.83 | 1.00 | 0.50 | 2/4 | iter 2 | +580 | -480 | 6 |
+| OpenCode + Qwen3 30B | B | 0.83 | 1.00 | 0.50 | 2/4 | iter 2 | +461 | -431 | 6 |
 | Claude Code | C | 1.00 | 1.00 | 0.50 | 2/4 | — | +836 | -921 | 0 |
 | OpenCode (Sonnet 4.6) | C | 1.00 | 1.00 | 0.75 | 3/4 | — | +1402 | -1252 | 0 |
 | OpenCode + GPT-5.4 | C | 1.00 | 1.00 | 0.50 | 2/4 | — | +1794 | -1663 | 0 |
@@ -27,11 +27,11 @@ The experiment spans 2 agents (Claude Code, OpenCode), 3 models (Claude Sonnet 4
 | Ctrl-A: Claude Code | A | 1.00 | 1.00 | 1.00 | 4/4 | — | +760 | -591 | 0 |
 | Ctrl-A: OC+Sonnet | A | 1.00 | 1.00 | 1.00 | 4/4 | — | +1237 | -675 | 0 |
 | Ctrl-A: OC+GPT-5.4 | A | 1.00 | 1.00 | 1.00 | 4/4 | — | +1248 | -1058 | 0 |
-| Ctrl-A: OC+Qwen3 | A | 1.00 | 1.00 | 1.00 | 4/4 | — | +1170 | -353 | 1 |
-| Ctrl-B: Claude Code | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +875 | -961 | 0 |
-| Ctrl-B: OC+Sonnet | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +1063 | -837 | 0 |
+| Ctrl-A: OC+Qwen3 | A | 1.00 | 1.00 | 1.00 | 4/4 | — | +1044 | -353 | 1 |
+| Ctrl-B: Claude Code | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +806 | -892 | 0 |
+| Ctrl-B: OC+Sonnet | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +1002 | -774 | 0 |
 | Ctrl-B: OC+GPT-5.4 | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +1497 | -1131 | 0 |
-| Ctrl-B: OC+Qwen3 | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +748 | -417 | 6 |
+| Ctrl-B: OC+Qwen3 | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +502 | -323 | 6 |
 | Permissive: Claude Code | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +918 | -855 | 0 |
 | Permissive: OC+GPT-5.4 | B | 1.00 | 1.00 | 1.00 | 4/4 | — | +1565 | -1235 | 0 |
 
@@ -87,7 +87,7 @@ Set B produces three distinct erosion signatures:
 
 **GPT-5.4** shows a near-binary oscillation pattern. PS alternates between 0.0 and 1.0 with one deviation (two consecutive 0.0 values at iterations 4–5): [1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0]. It renames everything in odd iterations and restores everything in even ones. With 6 direction changes, it has the highest oscillation count alongside Claude Code Set B. Critically, GPT-5.4 **recovers fully** by iteration 10 (PS final = 1.0), with no permanently eroded terms and 3/4 latent terms intact. This "oscillation without permanent damage" pattern is unique to GPT-5.4 and suggests it alternates between following the rename instruction and recognizing the domain terms' importance.
 
-**Qwen3 30B** is the most erosion-resistant model under explicit stress. PS never drops below 0.83, with a mean of 0.97 — the shallowest erosion of any Set B run. It also has the fewest direction changes (2) and recovers to PS final = 1.0. However, this comes at a cost: Qwen3 has the lowest refactoring throughput (580 insertions, 480 deletions) and required 6 compile fixes, suggesting that its conservatism may partly reflect limited refactoring capability rather than deliberate domain preservation. It extracts only 2/4 latent terms, the lowest ES final among models.
+**Qwen3 30B** is the most erosion-resistant model under explicit stress. PS never drops below 0.83, with a mean of 0.97 — the shallowest erosion of any Set B run. It also has the fewest direction changes (2) and recovers to PS final = 1.0. However, this comes at a cost: Qwen3 has the lowest refactoring throughput (461 insertions, 431 deletions) and required 6 compile fixes, suggesting that its conservatism may partly reflect limited refactoring capability rather than deliberate domain preservation. It extracts only 2/4 latent terms, the lowest ES final among models.
 
 ## 4. Phase 3 — Set C (Implicit Rename Pressure)
 
@@ -113,7 +113,7 @@ Control A tests whether providing **explicit domain context** — a glossary of 
 
 In all tested configurations, **domain context prevented erosion.** All four runs (Claude Code, OpenCode+Sonnet, OpenCode+GPT-5.4, OpenCode+Qwen3) maintain PS = 1.0 and ES = 1.0 across all 10 iterations. All 6 materialized terms survive, and all 4 latent terms are correctly extracted — the only configuration in the experiment to achieve perfect ES = 1.0.
 
-Importantly, the domain context does **not** suppress refactoring. All four Control A runs produce substantial code changes: Claude Code (+760/−591), OpenCode+Sonnet (+1237/−675), OpenCode+GPT-5.4 (+1248/−1058), and OpenCode+Qwen3 (+1170/−353). These volumes are comparable to the unprotected Set A runs, demonstrating that agents can refactor freely while respecting the glossary's protected terms. The domain context acts as a **surgical protection** of specific names, not a blanket inhibitor of all changes.
+Importantly, the domain context does **not** suppress refactoring. All four Control A runs produce substantial code changes: Claude Code (+760/−591), OpenCode+Sonnet (+1237/−675), OpenCode+GPT-5.4 (+1248/−1058), and OpenCode+Qwen3 (+1044/−353). These volumes are comparable to the unprotected Set A runs, demonstrating that agents can refactor freely while respecting the glossary's protected terms. The domain context acts as a **surgical protection** of specific names, not a blanket inhibitor of all changes.
 
 ## 6. Control B — Domain Context Under Stress
 
@@ -123,7 +123,7 @@ Control B escalates the test: can domain context protect terminology even when p
 
 In all tested configurations, **domain context overrode stress prompts.** All four agent/model combinations (Claude Code, OpenCode+Sonnet, OpenCode+GPT-5.4, OpenCode+Qwen3) maintain PS = 1.0 and ES = 1.0 across all iterations. No terms are eroded, and all latent terms are correctly extracted.
 
-The domain context also enables substantial refactoring under stress: Claude Code (+875/−961), OpenCode+Sonnet (+1063/−837), OpenCode+GPT-5.4 (+1497/−1131), and OpenCode+Qwen3 (+748/−417, with 6 compile fixes). Agents refactor code structure, extract value objects, and simplify methods — all while respecting the glossary's protected terms. The domain context overrides the explicit rename directives in Set B prompts without suppressing structural refactoring.
+The domain context also enables substantial refactoring under stress: Claude Code (+806/−892), OpenCode+Sonnet (+1002/−774), OpenCode+GPT-5.4 (+1497/−1131), and OpenCode+Qwen3 (+502/−323, with 6 compile fixes). Agents refactor code structure, extract value objects, and simplify methods — all while respecting the glossary's protected terms. The domain context overrides the explicit rename directives in Set B prompts without suppressing structural refactoring.
 
 Comparing Control B with the unprotected Set B runs highlights the magnitude of the domain context's effect. Without context, Set B produces catastrophic erosion: OpenCode+Sonnet drops to PS = 0.0, Claude Code oscillates to PS = 0.69, GPT-5.4 oscillates between 0.0 and 1.0. With context, all remain at PS = 1.0 while still performing meaningful refactoring.
 
@@ -156,11 +156,12 @@ The results point toward a practical mitigation strategy: embedding domain gloss
 | OC+Son Set A | A | 10/10 | +1299 | -891 | +408 | 81 | 0 | 0 |
 | OC+Son Set B | B | 10/10 | +3438 | -3395 | +43 | 163 | 0 | 0 |
 | OC+Son Set C | C | 8/10 | +1402 | -1252 | +150 | 102 | 0 | 0 |
+
 | GPT-5.4 Set A | A | 10/10 | +1688 | -971 | +717 | 78 | 0 | 0 |
 | GPT-5.4 Set B | B | 10/10 | +6377 | -6289 | +88 | 251 | 0 | 0 |
 | GPT-5.4 Set C | C | 10/10 | +1794 | -1663 | +131 | 132 | 0 | 0 |
 | Qwen3 Set A | A | 8/10 | +515 | -405 | +110 | 32 | 0 | 0 |
-| Qwen3 Set B | B | 9/10 | +580 | -480 | +100 | 50 | 6 | 0 |
+| Qwen3 Set B | B | 8/10 | +461 | -431 | +30 | 43 | 6 | 0 |
 | Qwen3 Set C | C | 7/10 | +636 | -940 | -304 | 44 | 5 | 0 |
 
 ![Refactoring Volume](figures/refactoring_volume.png)
@@ -189,7 +190,7 @@ Refactoring volume varies dramatically across configurations and correlates with
 
 6. **Qwen3 Set C erosion is stochastic and late-onset.** Across 3 replicas, erosion occurs in all three but with varying severity (PS final: 0.38, 0.38, 0.81) and different eroded terms. Erosion onset at iteration 9 — the latest in the experiment — suggests a cumulative pressure model rather than immediate susceptibility. The term `DistributionRun` is consistently vulnerable across replicas.
 
-7. **In the tested configurations, domain context prevented erosion while enabling refactoring.** Controls A and B achieved PS = 1.0 and ES = 1.0 across all agents, models, and prompt sets — including the aggressive Set B. Critically, agents continued to refactor actively (760–1497 insertions per run), performing structural improvements while respecting the protected terms. The glossary acted as a surgical guard on domain names, not a blanket inhibitor.
+7. **In the tested configurations, domain context prevented erosion while enabling refactoring.** Controls A and B achieved PS = 1.0 and ES = 1.0 across all agents, models, and prompt sets — including the aggressive Set B. Critically, agents continued to refactor actively (502–1497 insertions per run), performing structural improvements while respecting the protected terms. The glossary acted as a surgical guard on domain names, not a blanket inhibitor.
 
 8. **Permissive domain context achieves the same protection with comparable volume.** A less restrictive glossary that encourages refactoring while naming protected terms also achieves PS = 1.0 and ES = 1.0, with substantial refactoring volume (+918/−855 for Claude Code, +1565/−1235 for GPT-5.4). Both strict and permissive framing are effective; the permissive variant produces slightly higher volume for GPT-5.4.
 

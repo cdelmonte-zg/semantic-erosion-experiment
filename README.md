@@ -19,7 +19,7 @@ This experiment measures **semantic erosion** — the loss of Domain-Driven Desi
 | Stress prompts caused agent-dependent erosion | OpenCode+Sonnet crashed to PS=0.0; Claude Code oscillated to PS=0.69 |
 | GPT-5.4 eroded aggressively but recovered completely | PS near-binary oscillation 0↔1, ended at 1.0 with 0 permanently eroded terms |
 | Implicit pressure is consistent with a capability threshold | Cloud-backed configurations (Sonnet, GPT-5.4) resisted; local Qwen3 30B eroded at iteration 9 |
-| Domain context prevented erosion while enabling refactoring | All controls: PS=1.0 with substantial code changes (+760 to +1497 lines) |
+| Domain context prevented erosion while enabling refactoring | All controls: PS=1.0 with substantial code changes (+502 to +1497 lines) |
 
 Full results in [`report/report.md`](report/report.md).
 

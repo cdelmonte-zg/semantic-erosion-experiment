@@ -97,58 +97,18 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 1,
+  "changes_applied": 0,
   "compile_error_count": 0,
   "compile_autofix": "none",
   "glossary_tampered": false,
   "change_analysis": {
     "iteration": 4,
-    "files_added": [
-      "src/main/java/dev/cdelmonte/collecting/application/service/RoyaltyDistributionApplicationService.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/DistributionKey.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/DistributionRun.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/MusicalWork.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/RightsHolder.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/RightsShare.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/SettlementPeriod.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/UsageReport.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/service/RoyaltyAllocationService.java",
-      "src/main/java/dev/cdelmonte/collecting/infrastructure/repository/impl/DistributionRunRepositoryImpl.java"
-    ],
-    "files_deleted": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
-      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
-      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolder.java",
-      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java"
-    ],
-    "files_modified": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java"
-    ],
-    "files_renamed": [
-      {
-        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/ExploitationType.java",
-        "to": "src/main/java/dev/cdelmonte/collecting/domain/model/ExploitationType.java"
-      },
-      {
-        "from": "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRunRepository.java",
-        "to": "src/main/java/dev/cdelmonte/collecting/domain/repository/DistributionRunRepository.java"
-      },
-      {
-        "from": "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWorkRepository.java",
-        "to": "src/main/java/dev/cdelmonte/collecting/infrastructure/repository/MusicalWorkRepository.java"
-      },
-      {
-        "from": "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsHolderRepository.java",
-        "to": "src/main/java/dev/cdelmonte/collecting/infrastructure/repository/RightsHolderRepository.java"
-      },
-      {
-        "from": "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java",
-        "to": "src/main/java/dev/cdelmonte/collecting/infrastructure/repository/UsageReportRepository.java"
-      }
-    ],
-    "total_files_changed": 21,
-    "insertions": 471,
-    "deletions": 467
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [],
+    "files_renamed": [],
+    "total_files_changed": 0,
+    "insertions": 0,
+    "deletions": 0
   }
 }

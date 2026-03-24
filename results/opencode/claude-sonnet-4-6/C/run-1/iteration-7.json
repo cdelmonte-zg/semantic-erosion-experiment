@@ -97,7 +97,7 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 1,
+  "changes_applied": 0,
   "compile_error_count": 0,
   "compile_autofix": "none",
   "glossary_tampered": false,
@@ -105,17 +105,10 @@
     "iteration": 7,
     "files_added": [],
     "files_deleted": [],
-    "files_modified": [
-      "src/main/java/dev/cdelmonte/collecting/domain/model/DistributionKey.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/DistributionRun.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/RoyaltyStatement.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/SettlementPeriod.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/model/UsageReport.java",
-      "src/main/java/dev/cdelmonte/collecting/domain/service/RoyaltyCalculationService.java"
-    ],
+    "files_modified": [],
     "files_renamed": [],
-    "total_files_changed": 6,
-    "insertions": 18,
-    "deletions": 18
+    "total_files_changed": 0,
+    "insertions": 0,
+    "deletions": 0
   }
 }

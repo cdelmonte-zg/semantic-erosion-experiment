@@ -97,7 +97,7 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 1,
+  "changes_applied": 0,
   "compile_error_count": 0,
   "compile_autofix": "none",
   "glossary_tampered": false,
@@ -105,17 +105,10 @@
     "iteration": 6,
     "files_added": [],
     "files_deleted": [],
-    "files_modified": [
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionParameters.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
-      "src/main/java/dev/cdelmonte/collecting/distribution/TariffClass.java",
-      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java"
-    ],
+    "files_modified": [],
     "files_renamed": [],
-    "total_files_changed": 6,
-    "insertions": 15,
-    "deletions": 55
+    "total_files_changed": 0,
+    "insertions": 0,
+    "deletions": 0
   }
 }
