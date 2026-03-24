@@ -6,10 +6,10 @@ This experiment measures **semantic erosion** — the loss of Domain-Driven Desi
 
 ## TL;DR
 
-- **Set A** (neutral prompts): no erosion — all agents and models preserve domain terms perfectly
-- **Set B** (explicit rename pressure): erosion occurs, severity depends on agent and model
-- **Set C** (implicit pressure): only Qwen3 30B erodes (late onset at iteration 9) — cloud models resist
-- **Domain context** (strict or permissive): prevents erosion completely while enabling refactoring
+- **Set A** (neutral prompts): no erosion — all tested configurations preserved domain terms
+- **Set B** (explicit rename pressure): erosion occurred, severity depended on agent and model
+- **Set C** (implicit pressure): only the local Qwen3 30B configuration eroded (late onset at iteration 9) — cloud-backed configurations resisted
+- **Domain context** (strict or permissive): prevented erosion in all tested configurations while enabling refactoring
 
 ## Key Findings
 
@@ -18,7 +18,7 @@ This experiment measures **semantic erosion** — the loss of Domain-Driven Desi
 | In this experiment, neutral prompts did not cause erosion | All agent-model combinations maintained PS=1.0 across 10 iterations |
 | Stress prompts caused agent-dependent erosion | OpenCode+Sonnet crashed to PS=0.0; Claude Code oscillated to PS=0.69 |
 | GPT-5.4 eroded aggressively but recovered completely | PS near-binary oscillation 0↔1, ended at 1.0 with 0 permanently eroded terms |
-| Implicit pressure revealed a capability threshold | Cloud models (Sonnet, GPT-5.4) resisted; Qwen3 30B eroded at iteration 9 |
+| Implicit pressure is consistent with a capability threshold | Cloud-backed configurations (Sonnet, GPT-5.4) resisted; local Qwen3 30B eroded at iteration 9 |
 | Domain context prevented erosion while enabling refactoring | All controls: PS=1.0 with substantial code changes (+760 to +1497 lines) |
 
 Full results in [`report/report.md`](report/report.md).
@@ -129,7 +129,7 @@ The glossary defines 6 **materialized terms** (existing types) and 4 **latent te
 ## Known Limitations
 
 - **Adaptive thinking asymmetry:** Claude Code enables extended thinking by default (up to 32K tokens); OpenCode does not. This is a confounding variable in Phase 1.
-- **Permissive context tested on 2 configurations only:** Claude Code + Sonnet and OpenCode + GPT-5.4. Qwen3 — the most erosion-prone model — was not tested under permissive context.
+- **Permissive context tested on 2 configurations only:** Claude Code + Sonnet and OpenCode + GPT-5.4. Qwen3 — the most erosion-prone configuration — was not tested under permissive context.
 - **Single run for most configurations:** Cost constraints limited most runs to 1 replica. Qwen3 has 3 replicas due to high observed variance.
 
 ## License
