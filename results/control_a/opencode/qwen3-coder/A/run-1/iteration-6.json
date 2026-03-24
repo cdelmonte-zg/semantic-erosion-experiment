@@ -100,5 +100,25 @@
   },
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 6,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionKey.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/SettlementPeriod.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
+      "src/main/java/dev/cdelmonte/collecting/rightsholder/RightsShare.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java"
+    ],
+    "files_renamed": [],
+    "total_files_changed": 8,
+    "insertions": 117,
+    "deletions": 36
+  },
+  "changes_applied": 1
 }

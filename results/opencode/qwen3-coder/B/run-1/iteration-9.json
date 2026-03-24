@@ -96,8 +96,26 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 0,
+  "changes_applied": 1,
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 9,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/usage/Report.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java"
+      }
+    ],
+    "total_files_changed": 3,
+    "insertions": 21,
+    "deletions": 21
+  }
 }

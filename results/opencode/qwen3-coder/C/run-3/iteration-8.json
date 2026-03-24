@@ -98,8 +98,27 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 0,
+  "changes_applied": 1,
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 8,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/TestSimplifiedModel.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/TestSimplifiedModelTest.java"
+      },
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/distribution/SimplifiedDistributionServiceImpl.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/distribution/SimplifiedDistributionService.java"
+      }
+    ],
+    "total_files_changed": 2,
+    "insertions": 6,
+    "deletions": 6
+  }
 }

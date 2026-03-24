@@ -9,8 +9,7 @@ This experiment measures **semantic erosion** — the loss of Domain-Driven Desi
 - **Set A** (neutral prompts): no erosion — all agents and models preserve domain terms perfectly
 - **Set B** (explicit rename pressure): erosion occurs, severity depends on agent and model
 - **Set C** (implicit pressure): only Qwen3 30B erodes (late onset at iteration 9) — cloud models resist
-- **Strict domain context**: prevents erosion completely, but also prevents all refactoring (0 code changes)
-- **Permissive context**: protects terms, enables latent extraction, AND allows substantial refactoring
+- **Domain context** (strict or permissive): prevents erosion completely while enabling refactoring
 
 ## Key Findings
 
@@ -20,7 +19,7 @@ This experiment measures **semantic erosion** — the loss of Domain-Driven Desi
 | Stress prompts caused agent-dependent erosion | OpenCode+Sonnet crashed to PS=0.0; Claude Code oscillated to PS=0.69 |
 | GPT-5.4 eroded aggressively but recovered completely | PS near-binary oscillation 0↔1, ended at 1.0 with 0 permanently eroded terms |
 | Implicit pressure revealed a capability threshold | Cloud models (Sonnet, GPT-5.4) resisted; Qwen3 30B eroded at iteration 9 |
-| Domain context prevented erosion but killed refactoring | All controls: PS=1.0 but 0 code changes — context inhibition effect |
+| Domain context prevented erosion while enabling refactoring | All controls: PS=1.0 with substantial code changes (+760 to +1497 lines) |
 
 Full results in [`report/report.md`](report/report.md).
 

@@ -100,5 +100,18 @@
   },
   "compile_error_count": 0,
   "compile_autofix": "succeeded_attempt_2",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 3,
+    "files_added": [],
+    "files_deleted": [],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyReport.java"
+    ],
+    "files_renamed": [],
+    "total_files_changed": 1,
+    "insertions": 24,
+    "deletions": 25
+  },
+  "changes_applied": 1
 }

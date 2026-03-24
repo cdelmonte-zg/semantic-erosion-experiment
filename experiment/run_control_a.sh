@@ -469,10 +469,13 @@ with open(result_file) as f:
 data['compile_error_count'] = compile_errors
 data['compile_autofix'] = compile_autofix
 data['glossary_tampered'] = tampered
-data['changes_applied'] = 1
 if os.path.exists(change_file):
     with open(change_file) as cf:
-        data['change_analysis'] = json.load(cf)
+        ca = json.load(cf)
+    data['change_analysis'] = ca
+    data['changes_applied'] = 1 if ca.get('total_files_changed', 0) > 0 else 0
+else:
+    data['changes_applied'] = 0
 with open(result_file, 'w') as f:
     json.dump(data, f, indent=2)
 " "$ITERATION_RESULT" "$COMPILE_ERROR_COUNT" "$COMPILE_AUTOFIX" "$GLOSSARY_TAMPERED" "$CHANGE_ANALYSIS"

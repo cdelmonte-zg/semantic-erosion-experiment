@@ -100,5 +100,27 @@
   },
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 2,
+    "files_added": [],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/Report.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionRun.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/DistributionService.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/TariffClass.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/MusicalWork.java",
+      "src/main/java/dev/cdelmonte/collecting/musicalwork/RightsShare.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReport.java",
+      "src/main/java/dev/cdelmonte/collecting/usage/UsageReportRepository.java"
+    ],
+    "files_renamed": [],
+    "total_files_changed": 9,
+    "insertions": 51,
+    "deletions": 133
+  },
+  "changes_applied": 1
 }

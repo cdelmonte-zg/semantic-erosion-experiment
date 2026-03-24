@@ -84,6 +84,29 @@ def discover_runs(results_dir: Path) -> dict:
                             data = load_run(run_dir)
                             if data:
                                 runs[(f"control_a/{agent_dir.name}", sub.name, ps_dir.name, run_dir.name)] = data
+    # Permissive context runs
+    perm_dir = results_dir / "control_a_permissive"
+    if perm_dir.exists():
+        for agent_dir in sorted(perm_dir.iterdir()):
+            if not agent_dir.is_dir():
+                continue
+            for sub in sorted(agent_dir.iterdir()):
+                if not sub.is_dir():
+                    continue
+                if sub.name in ("A", "B", "C"):
+                    for run_dir in sorted(sub.glob("run-*")):
+                        data = load_run(run_dir)
+                        if data:
+                            runs[(f"control_a_permissive/{agent_dir.name}", "", sub.name, run_dir.name)] = data
+                else:
+                    for ps_dir in sorted(sub.iterdir()):
+                        if not ps_dir.is_dir():
+                            continue
+                        for run_dir in sorted(ps_dir.glob("run-*")):
+                            data = load_run(run_dir)
+                            if data:
+                                runs[(f"control_a_permissive/{agent_dir.name}", sub.name, ps_dir.name, run_dir.name)] = data
+
     return runs
 
 

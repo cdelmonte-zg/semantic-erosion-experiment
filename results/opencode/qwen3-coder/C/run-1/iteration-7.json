@@ -98,8 +98,20 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 0,
+  "changes_applied": 1,
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 7,
+    "files_added": [],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/domain/service/RoyaltyStatement.java"
+    ],
+    "files_modified": [],
+    "files_renamed": [],
+    "total_files_changed": 1,
+    "insertions": 0,
+    "deletions": 45
+  }
 }

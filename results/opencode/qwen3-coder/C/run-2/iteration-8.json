@@ -95,8 +95,32 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 0,
+  "changes_applied": 1,
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 8,
+    "files_added": [
+      "AGENTS.md",
+      "README.md"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/distribution/RoyaltyStatement.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/application/service/RoyaltyDistributionApplicationService.java",
+      "src/main/java/dev/cdelmonte/collecting/distribution/Report.java",
+      "src/main/java/dev/cdelmonte/collecting/domain/model/MusicalWorkUsage.java",
+      "src/main/java/dev/cdelmonte/collecting/domain/model/RightsHolder.java",
+      "src/main/java/dev/cdelmonte/collecting/domain/model/RoyaltyStatement.java",
+      "src/main/java/dev/cdelmonte/collecting/domain/repository/DistributionRunRepository.java",
+      "src/main/java/dev/cdelmonte/collecting/domain/service/RoyaltyAllocationService.java",
+      "src/main/java/dev/cdelmonte/collecting/infrastructure/repository/impl/DistributionRunRepositoryImpl.java"
+    ],
+    "files_renamed": [],
+    "total_files_changed": 11,
+    "insertions": 80,
+    "deletions": 68
+  }
 }

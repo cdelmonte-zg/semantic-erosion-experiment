@@ -95,8 +95,30 @@
       "weight": 0.8
     }
   },
-  "changes_applied": 0,
+  "changes_applied": 1,
   "compile_error_count": 0,
   "compile_autofix": "none",
-  "glossary_tampered": false
+  "glossary_tampered": false,
+  "change_analysis": {
+    "iteration": 6,
+    "files_added": [
+      "src/main/java/dev/cdelmonte/collecting/infrastructure/repository/MusicalWorkUsageRepository.java"
+    ],
+    "files_deleted": [
+      "src/main/java/dev/cdelmonte/collecting/infrastructure/repository/UsageReportRepository.java"
+    ],
+    "files_modified": [
+      "src/main/java/dev/cdelmonte/collecting/domain/model/DistributionKey.java",
+      "src/main/java/dev/cdelmonte/collecting/domain/service/RoyaltyAllocationService.java"
+    ],
+    "files_renamed": [
+      {
+        "from": "src/main/java/dev/cdelmonte/collecting/domain/model/UsageReport.java",
+        "to": "src/main/java/dev/cdelmonte/collecting/domain/model/MusicalWorkUsage.java"
+      }
+    ],
+    "total_files_changed": 5,
+    "insertions": 21,
+    "deletions": 21
+  }
 }
