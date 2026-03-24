@@ -133,14 +133,14 @@ Comparing Control B with the unprotected Set B runs highlights the magnitude of 
 
 | Agent / Model | Set | Context | PS final | ES final | Latent | +Lines | -Lines |
 |---|---|---|---|---|---|---|---|
-| Claude Code (Sonnet 4.6) | B | permissive | 1.00 | 1.00 | 4/4 | +0 | -0 |
-| OpenCode + GPT-5.4 | B | permissive | 1.00 | 1.00 | 4/4 | +0 | -0 |
+| Claude Code (Sonnet 4.6) | B | permissive | 1.00 | 1.00 | 4/4 | +918 | -855 |
+| OpenCode + GPT-5.4 | B | permissive | 1.00 | 1.00 | 4/4 | +1565 | -1235 |
 
 The permissive context variant attempts to resolve the context paralysis discovered in Controls A and B. Instead of a restrictive glossary that mandates "do not rename these terms," the permissive context provides domain definitions and business rationale while explicitly stating that refactoring and structural improvements are encouraged — only the specific domain names should be preserved.
 
 Two configurations are tested: Claude Code + Sonnet 4.6 and OpenCode + GPT-5.4, both with Set B stress prompts. Both runs achieve PS = 1.0 and ES = 1.0 across all 10 iterations — perfect term preservation with full latent extraction (4/4 terms). All 4 latent domain terms are materialized by iteration 1, demonstrating that the permissive context enables agents to recognize and extract latent concepts into first-class types.
 
-However, the permissive context does not fully resolve the paralysis problem. Both runs still show minimal structural refactoring beyond latent term extraction, indicating that the domain glossary's protective effect continues to dominate agent behavior. The key improvement over the strict context is qualitative: agents are no longer completely inert — they can extract latent terms and acknowledge domain structure. This represents a partial advance but not a complete solution.
+Unlike the strict context controls (which produced exactly 0 code changes), the permissive context enables **substantial refactoring**: Claude Code produced +918/−855 lines across 63 file changes, and GPT-5.4 produced +1565/−1235 across 108 file changes. This volume is comparable to the unprotected Set A runs, demonstrating that the permissive framing successfully decouples domain protection from refactoring paralysis. The agents extract latent terms into first-class types, restructure method signatures, and apply standard refactoring patterns — all while preserving the protected domain vocabulary.
 
 **Limitation:** Permissive context was tested on only 2 of 4 model configurations. Notably, Qwen3 30B — the only model to erode under implicit pressure (Set C) — was not tested under permissive context. This is the most interesting missing data point, as it would reveal whether permissive domain context can protect the most erosion-prone model.
 
@@ -173,7 +173,7 @@ Refactoring volume varies dramatically across configurations and correlates with
 
 **Qwen3 is the most conservative.** With the fewest active iterations (7–9 out of 10), lowest line counts, and the only model requiring compile fixes (6 in Set B, 5 in Set C), Qwen3 struggles with consistent refactoring execution. Its Set C net of −304 lines (more deletions than insertions) suggests destructive modifications rather than constructive refactoring. Paradoxically, despite being the least prolific refactorer, Qwen3 is the most erosion-prone model — it is the only one to erode under Set C and has the most compile failures. Lower refactoring capability correlates with higher erosion risk, not lower.
 
-**No agent tampered with the glossary.** Across all 31 runs, the glossary_tampered flag is 0 in every case. Agents never directly modify the domain glossary file, even when they rename the terms the glossary defines. This indicates that erosion operates at the code level, not the documentation level — agents rename classes and interfaces without updating the associated domain documentation.
+**No agent tampered with the glossary.** Across all 28 runs, the glossary_tampered flag is 0 in every case. Agents never directly modify the domain glossary file, even when they rename the terms the glossary defines. This indicates that erosion operates at the code level, not the documentation level — agents rename classes and interfaces without updating the associated domain documentation.
 
 ## 9. Key Findings
 
@@ -191,6 +191,6 @@ Refactoring volume varies dramatically across configurations and correlates with
 
 7. **Domain context prevents erosion completely but induces refactoring paralysis.** Controls A and B show that a restrictive domain glossary achieves PS = 1.0 and ES = 1.0 across all agents, models, and prompt sets — including the aggressive Set B. However, all context-protected runs produce exactly 0 code changes. Agents cannot distinguish "protect these names" from "do not modify the code."
 
-8. **Permissive domain context partially resolves the paralysis trade-off.** A less restrictive glossary that encourages refactoring while naming protected terms achieves PS = 1.0 and ES = 1.0, and enables latent term extraction (4/4 terms materialized). This demonstrates that glossary phrasing matters: permissive language can unlock productive domain modeling without sacrificing integrity.
+8. **Permissive domain context resolves the paralysis trade-off.** A less restrictive glossary that encourages refactoring while naming protected terms achieves PS = 1.0 and ES = 1.0, enables latent term extraction (4/4 terms materialized), and produces substantial refactoring volume (+918/−855 for Claude Code, +1565/−1235 for GPT-5.4). Unlike the strict context (0 code changes), the permissive framing successfully decouples domain protection from refactoring paralysis.
 
 9. **Higher refactoring volume does not predict higher erosion.** GPT-5.4 produces the most code changes (6377 insertions under Set B, 251 files touched) yet recovers to PS = 1.0. Qwen3 produces the fewest changes yet is the only model to erode under Set C. Erosion susceptibility is driven by model characteristics — specifically model size and instruction-following precision — not by the quantity of changes applied.

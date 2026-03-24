@@ -10,7 +10,7 @@ This experiment measures **semantic erosion** — the loss of Domain-Driven Desi
 - **Set B** (explicit rename pressure): erosion occurs, severity depends on agent and model
 - **Set C** (implicit pressure): only Qwen3 30B erodes (late onset at iteration 9) — cloud models resist
 - **Strict domain context**: prevents erosion completely, but also prevents all refactoring (0 code changes)
-- **Permissive context**: protects terms AND enables latent concept extraction — best practical outcome
+- **Permissive context**: protects terms, enables latent extraction, AND allows substantial refactoring
 
 ## Key Findings
 
