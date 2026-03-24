@@ -280,31 +280,31 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
 
     run_configs = [
         # Phase 1 + 2: Set A and B
-        ("Claude Code", "claude_code", "", "A", 1),
-        ("Claude Code", "claude_code", "", "B", 1),
-        ("OpenCode (Sonnet 4.6)", "opencode", "", "A", 1),
-        ("OpenCode (Sonnet 4.6)", "opencode", "", "B", 1),
+        ("Claude Code", "claude_code", "claude-sonnet-4-6", "A", 1),
+        ("Claude Code", "claude_code", "claude-sonnet-4-6", "B", 1),
+        ("OpenCode (Sonnet 4.6)", "opencode", "claude-sonnet-4-6", "A", 1),
+        ("OpenCode (Sonnet 4.6)", "opencode", "claude-sonnet-4-6", "B", 1),
         ("OpenCode + GPT-5.4", "opencode", "gpt-5.4", "A", 2),
         ("OpenCode + GPT-5.4", "opencode", "gpt-5.4", "B", 2),
         ("OpenCode + Qwen3 30B", "opencode", "qwen3-coder", "A", 2),
         ("OpenCode + Qwen3 30B", "opencode", "qwen3-coder", "B", 2),
         # Phase 3: Set C (implicit rename pressure)
-        ("Claude Code", "claude_code", "", "C", 3),
-        ("OpenCode (Sonnet 4.6)", "opencode", "", "C", 3),
+        ("Claude Code", "claude_code", "claude-sonnet-4-6", "C", 3),
+        ("OpenCode (Sonnet 4.6)", "opencode", "claude-sonnet-4-6", "C", 3),
         ("OpenCode + GPT-5.4", "opencode", "gpt-5.4", "C", 3),
         ("OpenCode + Qwen3 30B", "opencode", "qwen3-coder", "C", 3),
         # Control A (Set A + context)
-        ("Ctrl-A: Claude Code", "control_a/claude_code", "", "A", 1),
-        ("Ctrl-A: OC+Sonnet", "control_a/opencode", "", "A", 1),
+        ("Ctrl-A: Claude Code", "control_a/claude_code", "claude-sonnet-4-6", "A", 1),
+        ("Ctrl-A: OC+Sonnet", "control_a/opencode", "claude-sonnet-4-6", "A", 1),
         ("Ctrl-A: OC+GPT-5.4", "control_a/opencode", "gpt-5.4", "A", 2),
         ("Ctrl-A: OC+Qwen3", "control_a/opencode", "qwen3-coder", "A", 2),
         # Control B (Set B + context)
-        ("Ctrl-B: Claude Code", "control_a/claude_code", "", "B", 1),
-        ("Ctrl-B: OC+Sonnet", "control_a/opencode", "", "B", 1),
+        ("Ctrl-B: Claude Code", "control_a/claude_code", "claude-sonnet-4-6", "B", 1),
+        ("Ctrl-B: OC+Sonnet", "control_a/opencode", "claude-sonnet-4-6", "B", 1),
         ("Ctrl-B: OC+GPT-5.4", "control_a/opencode", "gpt-5.4", "B", 2),
         ("Ctrl-B: OC+Qwen3", "control_a/opencode", "qwen3-coder", "B", 2),
         # Permissive context (Set B + permissive context)
-        ("Permissive: Claude Code", "control_a_permissive/claude_code", "", "B", 1),
+        ("Permissive: Claude Code", "control_a_permissive/claude_code", "claude-sonnet-4-6", "B", 1),
         ("Permissive: OC+GPT-5.4", "control_a_permissive/opencode", "gpt-5.4", "B", 2),
     ]
 
@@ -341,7 +341,7 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
         ("claude_code", "Claude Code", "#e74c3c", "-"),
         ("opencode", "OpenCode", "#3498db", "--"),
     ]:
-        all_runs_a = [v for k, v in runs.items() if k[0] == ak and k[1] == "" and k[2] == "A"]
+        all_runs_a = [v for k, v in runs.items() if k[0] == ak and k[1] == "claude-sonnet-4-6" and k[2] == "A"]
         if all_runs_a:
             series_a.append((label, all_runs_a, color, style))
     _plot_ps_curves_multi_run(series_a, "Phase 1 Set A — Preservation Score",
@@ -355,7 +355,7 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
         ("claude_code", "Claude Code", "#e74c3c", "-"),
         ("opencode", "OpenCode", "#3498db", "--"),
     ]:
-        all_runs_b = [v for k, v in runs.items() if k[0] == ak and k[1] == "" and k[2] == "B"]
+        all_runs_b = [v for k, v in runs.items() if k[0] == ak and k[1] == "claude-sonnet-4-6" and k[2] == "B"]
         if all_runs_b:
             series_b.append((label, all_runs_b, color, style))
     _plot_ps_curves_multi_run(series_b, "Phase 1 Set B — Preservation Score",
@@ -368,7 +368,7 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     # Heatmaps
     for ak, label in [("claude_code", "Claude Code"), ("opencode", "OpenCode (Sonnet)")]:
         matching = [(k, v) for k, v in runs.items()
-                    if k[0] == ak and k[1] == "" and k[2] == "B"]
+                    if k[0] == ak and k[1] == "claude-sonnet-4-6" and k[2] == "B"]
         if matching:
             s = run_summary(matching[0][1])
             if s and s["ps_min"] < 1.0:
@@ -385,7 +385,7 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
         w(f"### 3.{1 if ps_key == 'A' else 2} {ps_label}\n")
         series = []
         for model, label, color in [
-            ("", "Sonnet 4.6", "#3498db"),
+            ("claude-sonnet-4-6", "Sonnet 4.6", "#3498db"),
             ("gpt-5.4", "GPT-5.4", "#9b59b6"),
             ("qwen3-coder", "Qwen3-Coder 30B", "#e67e22"),
         ]:
@@ -419,8 +419,8 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
 
     # Set C chart: all agents/models (cloud as single, Qwen3 as multi-run)
     setc_configs = [
-        ("Claude Code", "claude_code", "", "#e74c3c"),
-        ("OpenCode+Sonnet", "opencode", "", "#3498db"),
+        ("Claude Code", "claude_code", "claude-sonnet-4-6", "#e74c3c"),
+        ("OpenCode+Sonnet", "opencode", "claude-sonnet-4-6", "#3498db"),
         ("OpenCode+GPT-5.4", "opencode", "gpt-5.4", "#9b59b6"),
         ("OpenCode+Qwen3", "opencode", "qwen3-coder", "#e67e22"),
     ]
@@ -444,8 +444,8 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
 
     control_series = []
     for label, ak, model, ps, color, style in [
-        ("Claude Code (no ctx)", "claude_code", "", "B", "#e74c3c", "--"),
-        ("Claude Code + ctx", "control_a/claude_code", "", "A", "#1abc9c", "-"),
+        ("Claude Code (no ctx)", "claude_code", "claude-sonnet-4-6", "B", "#e74c3c", "--"),
+        ("Claude Code + ctx", "control_a/claude_code", "claude-sonnet-4-6", "A", "#1abc9c", "-"),
         ("GPT-5.4 (no ctx)", "opencode", "gpt-5.4", "B", "#9b59b6", "--"),
         ("GPT-5.4 + ctx", "control_a/opencode", "gpt-5.4", "A", "#8e44ad", "-"),
         ("Qwen3 (no ctx)", "opencode", "qwen3-coder", "B", "#e67e22", "--"),
@@ -467,8 +467,8 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
 
     controlb_series = []
     for label, ak, model, ps, color, style in [
-        ("Claude Code Set B (no ctx)", "claude_code", "", "B", "#e74c3c", "--"),
-        ("Claude Code Ctrl-B", "control_a/claude_code", "", "B", "#1abc9c", "-"),
+        ("Claude Code Set B (no ctx)", "claude_code", "claude-sonnet-4-6", "B", "#e74c3c", "--"),
+        ("Claude Code Ctrl-B", "control_a/claude_code", "claude-sonnet-4-6", "B", "#1abc9c", "-"),
         ("GPT-5.4 Set B (no ctx)", "opencode", "gpt-5.4", "B", "#9b59b6", "--"),
         ("GPT-5.4 Ctrl-B", "control_a/opencode", "gpt-5.4", "B", "#8e44ad", "-"),
         ("Qwen3 Set B (no ctx)", "opencode", "qwen3-coder", "B", "#e67e22", "--"),
@@ -491,9 +491,9 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
 
     perm_series = []
     for label, ak, model, ps, color, style in [
-        ("Claude Code Set B (no ctx)", "claude_code", "", "B", "#e74c3c", "--"),
-        ("Claude Code Ctrl-B (strict)", "control_a/claude_code", "", "B", "#1abc9c", "-."),
-        ("Claude Code Permissive", "control_a_permissive/claude_code", "", "B", "#2ecc71", "-"),
+        ("Claude Code Set B (no ctx)", "claude_code", "claude-sonnet-4-6", "B", "#e74c3c", "--"),
+        ("Claude Code Ctrl-B (strict)", "control_a/claude_code", "claude-sonnet-4-6", "B", "#1abc9c", "-."),
+        ("Claude Code Permissive", "control_a_permissive/claude_code", "claude-sonnet-4-6", "B", "#2ecc71", "-"),
         ("GPT-5.4 Set B (no ctx)", "opencode", "gpt-5.4", "B", "#9b59b6", "--"),
         ("GPT-5.4 Permissive", "control_a_permissive/opencode", "gpt-5.4", "B", "#8e44ad", "-"),
     ]:
@@ -513,12 +513,12 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     w("## 8. Refactoring Effectiveness\n")
 
     ref_configs = [
-        ("CC Set A", "claude_code", "", "A"),
-        ("CC Set B", "claude_code", "", "B"),
-        ("CC Set C", "claude_code", "", "C"),
-        ("OC+Son Set A", "opencode", "", "A"),
-        ("OC+Son Set B", "opencode", "", "B"),
-        ("OC+Son Set C", "opencode", "", "C"),
+        ("CC Set A", "claude_code", "claude-sonnet-4-6", "A"),
+        ("CC Set B", "claude_code", "claude-sonnet-4-6", "B"),
+        ("CC Set C", "claude_code", "claude-sonnet-4-6", "C"),
+        ("OC+Son Set A", "opencode", "claude-sonnet-4-6", "A"),
+        ("OC+Son Set B", "opencode", "claude-sonnet-4-6", "B"),
+        ("OC+Son Set C", "opencode", "claude-sonnet-4-6", "C"),
         ("GPT-5.4 Set A", "opencode", "gpt-5.4", "A"),
         ("GPT-5.4 Set B", "opencode", "gpt-5.4", "B"),
         ("GPT-5.4 Set C", "opencode", "gpt-5.4", "C"),

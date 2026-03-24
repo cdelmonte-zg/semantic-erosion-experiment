@@ -18,27 +18,32 @@ runs:
   - agent: claude_code
     type: erosion
     prompt_set: A
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: claude_code
     type: erosion
     prompt_set: B
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: opencode
     type: erosion
     prompt_set: A
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: opencode
     type: erosion
     prompt_set: B
+    model: claude-sonnet-4-6
     runs: 1
 
   # Control A: domain context (restrictive) — Set A
   - agent: claude_code
     type: control_a
     prompt_set: A
+    model: claude-sonnet-4-6
     runs: 1
 
   # ── Phase 2: Isolate the model (OpenCode agent) ──
@@ -77,6 +82,7 @@ runs:
   - agent: opencode
     type: control_a
     prompt_set: A
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: opencode
@@ -98,11 +104,13 @@ runs:
   - agent: claude_code
     type: erosion
     prompt_set: C
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: opencode
     type: erosion
     prompt_set: C
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: opencode
@@ -125,11 +133,13 @@ runs:
   - agent: claude_code
     type: control_a
     prompt_set: B
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: opencode
     type: control_a
     prompt_set: B
+    model: claude-sonnet-4-6
     runs: 1
 
   - agent: opencode
@@ -152,6 +162,7 @@ runs:
   - agent: claude_code
     type: control_a
     prompt_set: B
+    model: claude-sonnet-4-6
     context_mode: permissive
     runs: 1
 

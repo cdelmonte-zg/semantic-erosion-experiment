@@ -208,8 +208,9 @@ def main():
     parser.add_argument("--results-dir", default="results",
                         help="Path to results directory")
     parser.add_argument("--agents", nargs="+",
-                        default=["claude_code/A", "opencode/A",
-                                 "control_a/claude_code/A"],
+                        default=["claude_code/claude-sonnet-4-6/A",
+                                 "opencode/claude-sonnet-4-6/A",
+                                 "control_a/claude_code/claude-sonnet-4-6/A"],
                         help="Agent names to include in erosion curves")
     parser.add_argument("--metric", choices=["preservation_score", "dtd_10", "dtd_18"],
                         default="preservation_score",

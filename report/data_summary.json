@@ -1,5 +1,5 @@
 {
-  "claude_code/A": {
+  "claude_code/claude-sonnet-4-6/A": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,
@@ -45,7 +45,7 @@
       0.75
     ]
   },
-  "claude_code/B": {
+  "claude_code/claude-sonnet-4-6/B": {
     "iterations": 10,
     "ps_min": 0.0,
     "ps_max": 1.0,
@@ -94,7 +94,7 @@
       0.25
     ]
   },
-  "opencode/A": {
+  "opencode/claude-sonnet-4-6/A": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,
@@ -140,7 +140,7 @@
       0.75
     ]
   },
-  "opencode/B": {
+  "opencode/claude-sonnet-4-6/B": {
     "iterations": 10,
     "ps_min": 0.0,
     "ps_max": 1.0,
@@ -377,7 +377,7 @@
       0.5
     ]
   },
-  "claude_code/C": {
+  "claude_code/claude-sonnet-4-6/C": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,
@@ -423,7 +423,7 @@
       0.5
     ]
   },
-  "opencode/C": {
+  "opencode/claude-sonnet-4-6/C": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,
@@ -565,7 +565,7 @@
       0.75
     ]
   },
-  "control_a/claude_code/A": {
+  "control_a/claude_code/claude-sonnet-4-6/A": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,
@@ -611,7 +611,7 @@
       1.0
     ]
   },
-  "control_a/opencode/A": {
+  "control_a/opencode/claude-sonnet-4-6/A": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,
@@ -749,7 +749,7 @@
       1.0
     ]
   },
-  "control_a/claude_code/B": {
+  "control_a/claude_code/claude-sonnet-4-6/B": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,
@@ -795,7 +795,7 @@
       1.0
     ]
   },
-  "control_a/opencode/B": {
+  "control_a/opencode/claude-sonnet-4-6/B": {
     "iterations": 10,
     "ps_min": 1.0,
     "ps_max": 1.0,

@@ -64,22 +64,19 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
 
   for run_num in $(seq 1 "$NUM_RUNS"); do
     # Determine results directory using standardized paths
-    # Phase 2 includes model in path to distinguish runs with different models
-    MODEL_SUFFIX=""
-    if [ -n "$RUN_MODEL" ]; then
-      MODEL_SUFFIX="/${RUN_MODEL}"
-    fi
+    # Model is always in the path (default: claude-sonnet-4-6)
+    MODEL_DIR="${RUN_MODEL:-claude-sonnet-4-6}"
 
     if [ "$TYPE" == "erosion" ]; then
       SCRIPT="./experiment/run_experiment.sh"
-      RESULTS_DIR="results/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET}/run-${run_num}"
+      RESULTS_DIR="results/${AGENT}/${MODEL_DIR}/${PROMPT_SET}/run-${run_num}"
     elif [ "$TYPE" == "control_a" ]; then
       SCRIPT="./experiment/run_control_a.sh"
       CONTROL_DIR="control_a"
       if [ "$RUN_CONTEXT_MODE" == "permissive" ]; then
         CONTROL_DIR="control_a_permissive"
       fi
-      RESULTS_DIR="results/${CONTROL_DIR}/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET}/run-${run_num}"
+      RESULTS_DIR="results/${CONTROL_DIR}/${AGENT}/${MODEL_DIR}/${PROMPT_SET}/run-${run_num}"
     fi
 
     # Check if already complete — validate results contain preservation_score key
@@ -96,7 +93,7 @@ for idx in $(seq 0 $((RUN_COUNT - 1))); do
       continue
     fi
 
-    RUN_LABEL="${TYPE}/${AGENT}${MODEL_SUFFIX}/${PROMPT_SET} run ${run_num}/${NUM_RUNS}"
+    RUN_LABEL="${TYPE}/${AGENT}/${MODEL_DIR}/${PROMPT_SET} run ${run_num}/${NUM_RUNS}"
     log "--- ${RUN_LABEL} ---"
 
     if [ "$DRY_RUN" == "true" ]; then

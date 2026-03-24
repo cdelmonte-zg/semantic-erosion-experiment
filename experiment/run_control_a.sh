@@ -58,15 +58,11 @@ if [ "${CONTEXT_MODE:-}" == "permissive" ]; then
   CONTROL_TYPE="control_a_permissive"
 fi
 
-if [ -n "${MODEL:-}" ]; then
-  RESULTS_DIR="${PROJECT_ROOT}/results/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  LOG_DIR="${PROJECT_ROOT}/logs/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  BRANCH="experiment/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-else
-  RESULTS_DIR="${PROJECT_ROOT}/results/${CONTROL_TYPE}/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  LOG_DIR="${PROJECT_ROOT}/logs/${CONTROL_TYPE}/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  BRANCH="experiment/${CONTROL_TYPE}/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-fi
+# Model is always in the path (default: claude-sonnet-4-6)
+MODEL="${MODEL:-claude-sonnet-4-6}"
+RESULTS_DIR="${PROJECT_ROOT}/results/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+LOG_DIR="${PROJECT_ROOT}/logs/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+BRANCH="experiment/${CONTROL_TYPE}/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
 
 mkdir -p "$RESULTS_DIR" "$LOG_DIR"
 
@@ -190,8 +186,8 @@ if [ "$LAST_COMPLETED" -eq 0 ]; then
     --no-distance
 fi
 
-# --- Model selection (same as run_experiment.sh) ---
-MODEL="${MODEL:-claude-sonnet-4-6}"
+# --- Model selection ---
+# MODEL was set earlier (default: claude-sonnet-4-6)
 
 # --- Write agent config before iterations ---
 if [ "$AGENT" == "opencode" ]; then

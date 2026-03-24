@@ -47,18 +47,12 @@ else
 fi
 mapfile -t PROMPTS < "$PROMPT_FILE"
 
-# Output directories — include MODEL in path for Phase 2
-# Phase 1 (no MODEL): results/<agent>/<prompt_set>/run-<n>/
-# Phase 2 (MODEL set): results/<agent>/<model>/<prompt_set>/run-<n>/
-if [ -n "${MODEL:-}" ]; then
-  RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  LOG_DIR="${PROJECT_ROOT}/logs/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  BRANCH="experiment/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
-else
-  RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  LOG_DIR="${PROJECT_ROOT}/logs/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-  BRANCH="experiment/${AGENT}/${PROMPT_SET}/run-${RUN_NUMBER}"
-fi
+# Output directories — model is always in the path
+# Structure: results/<agent>/<model>/<prompt_set>/run-<n>/
+MODEL="${MODEL:-claude-sonnet-4-6}"
+RESULTS_DIR="${PROJECT_ROOT}/results/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+LOG_DIR="${PROJECT_ROOT}/logs/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
+BRANCH="experiment/${AGENT}/${MODEL}/${PROMPT_SET}/run-${RUN_NUMBER}"
 
 mkdir -p "$RESULTS_DIR" "$LOG_DIR"
 
@@ -199,9 +193,8 @@ if [ "$LAST_COMPLETED" -eq 0 ]; then
 fi
 
 # --- Model selection ---
-# Default: Claude Sonnet (Phase 1 — same model across all agents)
+# MODEL was set earlier (default: claude-sonnet-4-6)
 # Override with MODEL env var for Phase 2 (vary model, fixed agent)
-MODEL="${MODEL:-claude-sonnet-4-6}"
 
 # --- Write agent config before iterations ---
 # OpenCode needs opencode.json in project dir; write it once after checkout
