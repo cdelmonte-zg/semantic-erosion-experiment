@@ -4,15 +4,23 @@ Do AI coding agents gradually erase domain-specific terminology when refactoring
 
 This experiment measures **semantic erosion** — the loss of Domain-Driven Design (DDD) ubiquitous language when AI agents iteratively refactor a Java codebase. A collecting society rights management system serves as the subject, with domain terms like `RightsHolder`, `MusicalWork`, `DistributionRun` tracked across 10 refactoring iterations.
 
+## TL;DR
+
+- **Set A** (neutral prompts): no erosion — all agents and models preserve domain terms perfectly
+- **Set B** (explicit rename pressure): erosion occurs, severity depends on agent and model
+- **Set C** (implicit pressure): only Qwen3 30B erodes (late onset at iteration 9) — cloud models resist
+- **Strict domain context**: prevents erosion completely, but also prevents all refactoring (0 code changes)
+- **Permissive context**: protects terms AND enables latent concept extraction — best practical outcome
+
 ## Key Findings
 
 | Finding | Evidence |
 |---------|----------|
-| Neutral prompts never cause erosion | All agent-model combinations maintain PS=1.0 across 10 iterations |
-| Stress prompts cause agent-dependent erosion | OpenCode+Sonnet crashes to PS=0.0; Claude Code oscillates to PS=0.69 |
-| GPT-5.4 erodes aggressively but recovers completely | PS alternates 0↔1, ends at 1.0 with 0 permanently eroded terms |
-| Implicit pressure reveals a capability threshold | Cloud models (Sonnet, GPT-5.4) resist; Qwen3 30B erodes at iteration 9 |
-| Domain context prevents erosion but kills refactoring | All controls: PS=1.0 but 0 code changes — context inhibition effect |
+| In this experiment, neutral prompts did not cause erosion | All agent-model combinations maintained PS=1.0 across 10 iterations |
+| Stress prompts caused agent-dependent erosion | OpenCode+Sonnet crashed to PS=0.0; Claude Code oscillated to PS=0.69 |
+| GPT-5.4 eroded aggressively but recovered completely | PS near-binary oscillation 0↔1, ended at 1.0 with 0 permanently eroded terms |
+| Implicit pressure revealed a capability threshold | Cloud models (Sonnet, GPT-5.4) resisted; Qwen3 30B eroded at iteration 9 |
+| Domain context prevented erosion but killed refactoring | All controls: PS=1.0 but 0 code changes — context inhibition effect |
 
 Full results in [`report/report.md`](report/report.md).
 
@@ -25,13 +33,15 @@ Full results in [`report/report.md`](report/report.md).
 
 ### Prompt Sets
 
+Representative examples from each set (5 prompts per set, cycled over 10 iterations; see `experiment/prompts_*.txt` for full sets):
+
 - **Set A (neutral):** "Refactor this project to improve readability."
 - **Set B (stress):** "Clean up this codebase. Rename anything that seems overly specific."
 - **Set C (implicit):** "Some class names seem unusual. Align them with standard Java patterns."
 
 ### Metrics
 
-- **Preservation Score (PS):** Fraction of materialized domain terms retained (1.0 = all preserved)
+- **Preservation Score (PS):** Fraction of materialized domain terms retained (1.0 = all preserved, 0.0 = all lost)
 - **Emergence Score (ES):** Correct extraction of latent domain concepts from code smells
 
 ## Project Structure
@@ -46,7 +56,7 @@ experiment/
   run_experiment.sh     Single-run executor (10 iterations per run)
   measure_fidelity.py   PS/ES metrics via tree-sitter AST parsing
   generate_report.py    Report generator (tables + charts + AI analysis)
-results/                Per-iteration JSON results by agent/model/set
+results/                Per-iteration JSON results: <agent>/<model>/<set>/run-<n>/
 report/                 Generated report, charts, data summary
 ```
 
@@ -82,13 +92,16 @@ pip install -r requirements.txt
 python experiment/generate_report.py
 ```
 
-### Results
+### Reproducing the Published Results
 
-Each iteration produces a JSON file with per-term tracking:
+The repository includes all 28 run results (308 iteration JSONs). To regenerate the report and charts from existing data without re-running experiments:
 
+```bash
+source .venv/bin/activate
+python experiment/generate_report.py    # tables + charts + AI analysis
 ```
-results/<agent>/<model>/<prompt_set>/run-<n>/iteration-<i>.json
-```
+
+Re-running experiments requires active API keys and, for Qwen3 runs, a local Ollama instance with `qwen3-coder-experiment` (30B, Q4_K_M quantization on NVIDIA RTX 4090, 24GB VRAM).
 
 ## Agents and Models
 
@@ -101,7 +114,7 @@ results/<agent>/<model>/<prompt_set>/run-<n>/iteration-<i>.json
 |-------|----------|------|
 | Claude Sonnet 4.6 | Anthropic (cloud) | Phase 1 baseline + Phase 2 |
 | GPT-5.4 | OpenAI (cloud) | Phase 2 |
-| Qwen3-Coder 30B | Ollama (local) | Phase 2 |
+| Qwen3-Coder 30B | Ollama (local, Q4_K_M quantization) | Phase 2 |
 
 ## The Subject Codebase
 
@@ -114,6 +127,12 @@ A synthetic collecting society domain model (royalty distribution for musical wo
 
 The glossary defines 6 **materialized terms** (existing types) and 4 **latent terms** (concepts that should emerge through refactoring). This allows measuring both erosion and correct domain concept extraction.
 
+## Known Limitations
+
+- **Adaptive thinking asymmetry:** Claude Code enables extended thinking by default (up to 32K tokens); OpenCode does not. This is a confounding variable in Phase 1.
+- **Permissive context tested on 2 configurations only:** Claude Code + Sonnet and OpenCode + GPT-5.4. Qwen3 — the most erosion-prone model — was not tested under permissive context.
+- **Single run for most configurations:** Cost constraints limited most runs to 1 replica. Qwen3 has 3 replicas due to high observed variance.
+
 ## License
 
-Research project. Results and methodology are available for academic use.
+MIT License for code. CC-BY 4.0 for results and report.
