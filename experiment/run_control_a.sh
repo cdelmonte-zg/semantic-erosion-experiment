@@ -397,6 +397,50 @@ FEOF
   git add src/ pom.xml
   git commit -m "iteration-${i}-control_a-${AGENT}-${PROMPT_SET}-run${RUN_NUMBER}" || true
 
+  # --- Analyze changes made by the agent ---
+  CHANGE_ANALYSIS="${LOG_DIR}/changes-iteration-${i}.json"
+  python3 -c "
+import subprocess, json
+
+has_parent = subprocess.run(['git', 'rev-parse', '--verify', 'HEAD~1'], capture_output=True).returncode == 0
+diff_ref = 'v0' if not has_parent else 'HEAD~1'
+
+name_status = subprocess.run(['git', 'diff', '--name-status', diff_ref, 'HEAD'], capture_output=True, text=True).stdout.strip()
+diff_numstat = subprocess.run(['git', 'diff', '--numstat', diff_ref, 'HEAD'], capture_output=True, text=True).stdout.strip()
+
+files_added, files_deleted, files_modified, files_renamed = [], [], [], []
+insertions, deletions = 0, 0
+
+for line in name_status.split('\n'):
+    if not line.strip(): continue
+    parts = line.split('\t')
+    status = parts[0]
+    if status.startswith('A'): files_added.append(parts[1])
+    elif status.startswith('D'): files_deleted.append(parts[1])
+    elif status.startswith('M'): files_modified.append(parts[1])
+    elif status.startswith('R'): files_renamed.append({'from': parts[1], 'to': parts[2]})
+
+for line in diff_numstat.split('\n'):
+    if not line.strip(): continue
+    parts = line.split('\t')
+    try:
+        insertions += int(parts[0])
+        deletions += int(parts[1])
+    except ValueError:
+        pass
+
+analysis = {
+    'iteration': $i,
+    'files_added': files_added, 'files_deleted': files_deleted,
+    'files_modified': files_modified, 'files_renamed': files_renamed,
+    'total_files_changed': len(files_added) + len(files_deleted) + len(files_modified) + len(files_renamed),
+    'insertions': insertions, 'deletions': deletions,
+}
+with open('$CHANGE_ANALYSIS', 'w') as f:
+    json.dump(analysis, f, indent=2)
+print(f'  Changes: +{insertions}/-{deletions} in {analysis[\"total_files_changed\"]} files')
+" 2>/dev/null || echo "  (change analysis skipped)"
+
   # Verify GLOSSARY
   CURRENT_HASH=$(sha256sum "$GLOSSARY" | awk '{print $1}')
   if [ "$CURRENT_HASH" != "$GLOSSARY_HASH" ]; then
@@ -414,19 +458,24 @@ FEOF
     --output "$ITERATION_RESULT"
 
   python3 -c "
-import json, sys
+import json, sys, os
 result_file = sys.argv[1]
 compile_errors = int(sys.argv[2])
 compile_autofix = sys.argv[3]
 tampered = sys.argv[4] == 'true'
+change_file = sys.argv[5]
 with open(result_file) as f:
     data = json.load(f)
 data['compile_error_count'] = compile_errors
 data['compile_autofix'] = compile_autofix
 data['glossary_tampered'] = tampered
+data['changes_applied'] = 1
+if os.path.exists(change_file):
+    with open(change_file) as cf:
+        data['change_analysis'] = json.load(cf)
 with open(result_file, 'w') as f:
     json.dump(data, f, indent=2)
-" "$ITERATION_RESULT" "$COMPILE_ERROR_COUNT" "$COMPILE_AUTOFIX" "$GLOSSARY_TAMPERED"
+" "$ITERATION_RESULT" "$COMPILE_ERROR_COUNT" "$COMPILE_AUTOFIX" "$GLOSSARY_TAMPERED" "$CHANGE_ANALYSIS"
 
   echo ""
 done
