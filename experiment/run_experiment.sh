@@ -4,17 +4,16 @@
 # Usage:
 #   ./experiment/run_experiment.sh <agent> <prompt_set> [iterations] [run_number]
 #
-# Agents: claude_code, opencode, openhands
+# Agents: claude_code, opencode
 # Prompt sets: A (neutral), B (stress)
 #
 # Examples:
 #   ./experiment/run_experiment.sh claude_code A          # Set A, 10 iterations, run 1
 #   ./experiment/run_experiment.sh opencode B 10 2        # Set B, run 2
-#   ./experiment/run_experiment.sh openhands A 10 3       # Set A, run 3
 
 set -euo pipefail
 
-AGENT="${1:?Usage: run_experiment.sh <claude_code|opencode|openhands> <A|B> [iterations] [run_number]}"
+AGENT="${1:?Usage: run_experiment.sh <claude_code|opencode> <A|B> [iterations] [run_number]}"
 PROMPT_SET_EARLY="${2:-unknown}"
 RUN_NUMBER_EARLY="${4:-1}"
 
@@ -94,7 +93,7 @@ done
 # Only export Gemini (needed by OpenCode config)
 export GOOGLE_GENERATIVE_AI_API_KEY="${GEMINI_API_KEY:-}"
 # ANTHROPIC_API_KEY and OPENAI_API_KEY are passed explicitly
-# to OpenCode/OpenHands inside run_agent(), not exported globally.
+# to OpenCode inside run_agent(), not exported globally.
 
 # --- Resume support: check for existing results ---
 LAST_COMPLETED=0
@@ -293,25 +292,8 @@ OCEOF
     timeout "$AGENT_TIMEOUT" opencode run "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
-  elif [ "$AGENT" == "openhands" ]; then
-    # OpenHands: pass API key and model via env
-    local OH_MODEL OH_KEY
-    case "$MODEL" in
-      claude-sonnet*|anthropic*)  OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
-      gpt-5.4*|openai*)            OH_MODEL="openai/gpt-5.4"; OH_KEY="$OPENAI_API_KEY" ;;
-      qwen*|ollama*)              OH_MODEL="ollama_chat/qwen3-coder-experiment"; OH_KEY="none" ;;
-      gemini*)                    OH_MODEL="gemini/gemini-2.5-flash"; OH_KEY="$GEMINI_API_KEY" ;;
-      *)                          OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
-    esac
-    # OpenHands needs explicit directory context — it doesn't explore the filesystem by default
-    local OH_PROMPT="The Java project is in the current working directory ($(pwd)). The source code is in src/main/java/. ${PROMPT}"
-    LLM_API_KEY="$OH_KEY" \
-    LLM_MODEL="$OH_MODEL" \
-    timeout "$AGENT_TIMEOUT" openhands --headless --override-with-envs -t "$OH_PROMPT" \
-      2>&1 | tee "$LOG_FILE" || return $?
-
   else
-    echo "ERROR: Unknown agent '${AGENT}'. Use: claude_code, opencode, openhands"
+    echo "ERROR: Unknown agent '${AGENT}'. Use: claude_code, opencode"
     return 1
   fi
 }
@@ -334,7 +316,6 @@ for i in $(seq 1 "$ITERATIONS"); do
 
   # --- Clean agent state to prevent session accumulation ---
   rm -rf "${COLLECTING_SOCIETY}/.opencode/" 2>/dev/null
-
   # --- Hide GLOSSARY from agent to prevent uncontrolled grounding ---
   mv "$GLOSSARY" "${GLOSSARY_BACKUP}.hidden" 2>/dev/null || true
 

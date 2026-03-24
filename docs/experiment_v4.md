@@ -66,7 +66,6 @@ been extracted.
 |--------------|----------------|-------------|-------------------------|
 | Claude Code  | CLI, agentic   | Full (bash) | Sonnet 4 (cloud)        |
 | OpenCode     | CLI, agentic   | Full (bash) | Configurable            |
-| OpenHands    | CLI, headless  | Full (bash) | Gemini 2.5 Flash (cloud)|
 
 ## Prompt Sets
 
@@ -129,7 +128,7 @@ stronger capability threshold finding. Both outcomes are publishable.
 ## Known Asymmetry: Adaptive Thinking
 
 Claude Code enables adaptive thinking by default on Sonnet 4.6
-(up to 32K thinking tokens per prompt). OpenCode and OpenHands call
+(up to 32K thinking tokens per prompt). OpenCode calls
 the Anthropic API without the `thinking` parameter, which defaults
 to thinking disabled.
 

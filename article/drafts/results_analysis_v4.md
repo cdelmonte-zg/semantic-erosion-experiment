@@ -21,7 +21,7 @@ completely prevents erosion across all tested configurations.
 ## 2. Phase 1 Results — Isolate the Agent
 
 **Fixed variable:** Model (Claude Sonnet 4.6)
-**Varied variable:** Agent (Claude Code, OpenCode, OpenHands)
+**Varied variable:** Agent (Claude Code, OpenCode)
 
 ### Set A — Neutral Prompts ("Refactor to improve readability")
 
@@ -29,10 +29,9 @@ completely prevents erosion across all tested configurations.
 |-------------|-------|-------|-------|--------|----------|
 | Claude Code | 1.0   | 1.0   | 1.0   | 1.0    | NO       |
 | OpenCode    | 1.0   | 1.0   | 1.0   | 1.0    | NO       |
-| OpenHands   | 1.0   | —     | —     | 1.0    | NO       |
 
 **Finding 1: Neutral refactoring prompts never cause erosion.**
-All three agents preserve every materialized domain term across all
+Both agents preserve every materialized domain term across all
 iterations. The agents also correctly extract latent terms (ES=1.0)
 with the correct domain names from GLOSSARY.yaml.
 
@@ -42,7 +41,6 @@ with the correct domain names from GLOSSARY.yaml.
 |-------------|-------------|-------------|-------------|----------|
 | Claude Code | **0.12**    | **0.69**    | **0.0**     | **YES**  |
 | OpenCode    | **0.0**     | —           | —           | **YES**  |
-| OpenHands   | 1.0         | —           | —           | NO       |
 
 **Finding 2: Stress prompts cause erosion, but severity is agent-dependent.**
 
@@ -54,8 +52,7 @@ with the correct domain names from GLOSSARY.yaml.
 - **OpenCode** erodes late: PS=1.0 for 8 iterations, then drops to
   0.0 at iterations 9-10. Less aggressive than Claude Code.
 
-- **OpenHands** never erodes: PS=1.0 on all 10 iterations even with
-  stress prompts. This agent is structurally resistant to erosion.
+
 
 **Finding 3: The oscillatory erosion pattern.**
 Erosion is not monotonic — it oscillates with the prompt cycle.
@@ -68,13 +65,12 @@ This means a single "cleanup" prompt can undo months of careful
 domain naming in one pass — but the damage is reversible if the
 next prompt is constructive.
 
-**Finding 4: Agent architecture matters more than expected.**
-OpenHands with the same model (Sonnet 4.6) and same prompts never
-erodes. The difference may be related to:
+**Finding 4: Agent architecture matters.**
+The difference between Claude Code and OpenCode erosion patterns may be related to:
 - How each agent orchestrates LLM calls (single-shot vs multi-step)
 - How each agent presents the codebase context
 - Whether adaptive thinking is enabled (Claude Code enables it by
-  default; OpenCode and OpenHands do not)
+  default; OpenCode does not)
 
 ### Control A — Domain Context Mitigation
 
@@ -139,7 +135,6 @@ models, not just across agents. The mitigation is model-independent.
 |------------------------|-------|------------------|
 | Claude Code Set A      | 1.0   | 1-4/4            |
 | OpenCode+Sonnet Set A  | 1.0   | 4/4              |
-| OpenHands+Sonnet Set A | 1.0   | 4/4              |
 | OpenCode+GPT-5.4 Set A | None  | 0/4              |
 | OpenCode+GPT-5.4 Set B | 0.0-1.0 | 0-4/4 (oscillates) |
 
@@ -184,11 +179,11 @@ the oscillatory, non-deterministic nature of LLM refactoring.
    untested for local models in this experiment version.
 
 2. **Adaptive thinking asymmetry**: Claude Code enables adaptive thinking
-   by default (up to 32K thinking tokens). OpenCode and OpenHands do not.
+   by default (up to 32K thinking tokens). OpenCode does not.
    This is a confounding variable in Phase 1.
 
-3. **Single run for OpenCode/OpenHands**: Cost constraints limited
-   OpenCode Set B and OpenHands to 1 run each. Variance is measured
+3. **Single run for OpenCode**: Cost constraints limited
+   OpenCode Set B to 1 run. Variance is measured
    only on Claude Code (3 runs, free via Max subscription).
 
 4. **Prompt set design**: Set B prompts explicitly invite renaming

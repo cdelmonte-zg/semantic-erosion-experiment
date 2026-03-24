@@ -278,21 +278,6 @@ OCEOF
     timeout "$AGENT_TIMEOUT" opencode run "$PROMPT" \
       2>&1 | tee "$LOG_FILE" || return $?
 
-  elif [ "$AGENT" == "openhands" ]; then
-    local OH_MODEL OH_KEY
-    case "$MODEL" in
-      claude-sonnet*|anthropic*)  OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
-      gpt-5.4*|openai*)            OH_MODEL="openai/gpt-5.4"; OH_KEY="$OPENAI_API_KEY" ;;
-      qwen*|ollama*)              OH_MODEL="ollama_chat/qwen3-coder-experiment"; OH_KEY="none" ;;
-      gemini*)                    OH_MODEL="gemini/gemini-2.5-flash"; OH_KEY="$GEMINI_API_KEY" ;;
-      *)                          OH_MODEL="anthropic/claude-sonnet-4-6"; OH_KEY="$ANTHROPIC_API_KEY" ;;
-    esac
-    local OH_PROMPT="The Java project is in the current working directory ($(pwd)). The source code is in src/main/java/. ${PROMPT}"
-    LLM_API_KEY="$OH_KEY" \
-    LLM_MODEL="$OH_MODEL" \
-    timeout "$AGENT_TIMEOUT" openhands --headless --override-with-envs -t "$OH_PROMPT" \
-      2>&1 | tee "$LOG_FILE" || return $?
-
   else
     echo "ERROR: Unknown agent '${AGENT}'."
     return 1

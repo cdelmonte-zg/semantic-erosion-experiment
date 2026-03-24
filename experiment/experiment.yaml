@@ -35,16 +35,6 @@ runs:
     prompt_set: B
     runs: 1
 
-  - agent: openhands
-    type: erosion
-    prompt_set: A
-    runs: 1
-
-  - agent: openhands
-    type: erosion
-    prompt_set: B
-    runs: 1
-
   # Control A: domain context (restrictive) — Set A
   - agent: claude_code
     type: control_a
@@ -111,11 +101,6 @@ runs:
     runs: 1
 
   - agent: opencode
-    type: erosion
-    prompt_set: C
-    runs: 1
-
-  - agent: openhands
     type: erosion
     prompt_set: C
     runs: 1

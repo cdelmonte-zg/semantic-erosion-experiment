@@ -284,8 +284,6 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
         ("Claude Code", "claude_code", "", "B", 1),
         ("OpenCode (Sonnet 4.6)", "opencode", "", "A", 1),
         ("OpenCode (Sonnet 4.6)", "opencode", "", "B", 1),
-        ("OpenHands", "openhands", "", "A", 1),
-        ("OpenHands", "openhands", "", "B", 1),
         ("OpenCode + GPT-5.4", "opencode", "gpt-5.4", "A", 2),
         ("OpenCode + GPT-5.4", "opencode", "gpt-5.4", "B", 2),
         ("OpenCode + Qwen3 30B", "opencode", "qwen3-coder", "A", 2),
@@ -342,7 +340,6 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     for ak, label, color, style in [
         ("claude_code", "Claude Code", "#e74c3c", "-"),
         ("opencode", "OpenCode", "#3498db", "--"),
-        ("openhands", "OpenHands", "#2ecc71", "-."),
     ]:
         all_runs_a = [v for k, v in runs.items() if k[0] == ak and k[1] == "" and k[2] == "A"]
         if all_runs_a:
@@ -357,7 +354,6 @@ def generate_draft(results_dir: Path, output_dir: Path) -> tuple[Path, dict]:
     for ak, label, color, style in [
         ("claude_code", "Claude Code", "#e74c3c", "-"),
         ("opencode", "OpenCode", "#3498db", "--"),
-        ("openhands", "OpenHands", "#2ecc71", "-."),
     ]:
         all_runs_b = [v for k, v in runs.items() if k[0] == ak and k[1] == "" and k[2] == "B"]
         if all_runs_b:
@@ -600,7 +596,7 @@ analytical text (2-5 paragraphs each). Write in English, be concise and precise.
 For each section:
 - AI:intro — Explain what the experiment measures, the setup (10 iterations, 3 prompt sets A/B/C, 3 agents, 3 models, 31 runs)
 - AI:phase1 — Introduce Phase 1 (vary agent, fix model)
-- AI:phase1_analysis — Analyze Phase 1 results: Set A vs Set B, which agents erode, oscillation patterns. OpenHands produces zero changes (headless mode limitation, not erosion resistance)
+- AI:phase1_analysis — Analyze Phase 1 results: Set A vs Set B, which agents erode, oscillation patterns
 - AI:phase2 — Introduce Phase 2 (fix agent OpenCode, vary model)
 - AI:phase2_analysis — Compare models: erosion aggressiveness, onset timing, latent extraction
 - AI:setc — Introduce Set C: implicit rename pressure without explicit "rename" keyword. Key question: does erosion require explicit instructions?

@@ -1,14 +1,16 @@
 # Semantic Erosion Experiment — Results Report
 
-Generated: 2026-03-23 22:34
+Generated: 2026-03-24 11:17
 
 ## 1. Results Summary
 
-This report presents results from 31 experimental runs across 3 prompt sets (A: neutral, B: stress, C: implicit rename pressure), 2 functional agents (Claude Code, OpenCode), and 3 backend models (Sonnet 4.6, GPT-5.4, Qwen3 30B). OpenHands was also tested but produced zero code changes in headless mode and is excluded from comparative analysis -- its apparent erosion resistance is an artifact of non-functionality, not robustness.
+<!-- AI:intro -->
+This experiment measures **semantic erosion** — the gradual loss of domain-specific terminology in a Java Domain-Driven Design (DDD) codebase when AI coding agents perform iterative refactoring. A collecting society management system with well-defined ubiquitous language (terms like `RightsHolder`, `MusicalWork`, `DistributionRun`, `RoyaltyStatement`, `ExploitationType`) serves as the subject codebase. Each run consists of 10 refactoring iterations, where an AI agent receives a prompt and modifies the codebase autonomously.
 
-The core finding is that semantic erosion is prompt-dependent, not agent-dependent. Under neutral prompts (Set A), all agent-model combinations maintain PS=1.0 across 10 iterations. Under stress prompts (Set B), erosion onset occurs at iteration 2 for every vulnerable configuration. The severity gap between models is dramatic: OpenCode+Sonnet erodes to PS=0.0 final, Claude Code oscillates between 0.0 and 0.69, while GPT-5.4 self-corrects back to PS=1.0. Qwen3 30B shows high inter-run variance, with PS dipping to 0.83 in one replica but remaining at 1.0 in others.
+The experiment uses two primary metrics: **Preservation Score (PS)**, which measures how many materialized domain terms survive each iteration (1.0 = all preserved, 0.0 = all lost), and **Emergence Score (ES)**, which measures the agent's ability to extract latent domain concepts and name them correctly according to a glossary. Three prompt sets test different erosion pressures: **Set A** (neutral refactoring prompts), **Set B** (stress prompts that explicitly invite renaming), and **Set C** (implicit rename pressure without using the word "rename").
 
-Control runs (both A and B) with domain context in the system prompt produce zero code changes across all 8 agent-model combinations -- zero insertions, zero deletions, zero files touched. This demonstrates that domain context does not merely prevent renaming; it completely inhibits refactoring. The permissive context variant, designed to allow structural changes while protecting names, also produces zero changes, confirming that even softened domain constraints suppress all agent activity.
+The experiment spans 28 runs across 2 agents (Claude Code, OpenCode), 3 models (Claude Sonnet 4.6, GPT-5.4, Qwen3-Coder 30B local), and includes controls for domain context mitigation. Phase 1 isolates the agent variable (fixing the model to Sonnet 4.6), Phase 2 isolates the model variable (fixing the agent to OpenCode), and Phase 3 tests implicit erosion pressure via Set C. Two control conditions test whether providing domain context (a GLOSSARY.yaml reference) prevents erosion under neutral (Control A) and stress (Control B) prompts.
+<!-- /AI -->
 
 | Agent / Model | Set | PS min | PS final | ES final | Latent | Erosion Onset | +Lines | -Lines | Compile Fixes |
 |---|---|---|---|---|---|---|---|---|---|
@@ -16,8 +18,6 @@ Control runs (both A and B) with domain context in the system prompt produce zer
 | Claude Code | B | 0.00 | 0.69 | 0.25 | 1/4 | iter 2 | +2227 | -2329 | 0 |
 | OpenCode (Sonnet 4.6) | A | 1.00 | 1.00 | 0.75 | 3/4 | — | +1299 | -891 | 0 |
 | OpenCode (Sonnet 4.6) | B | 0.00 | 0.00 | 0.00 | 0/4 | iter 2 | +3438 | -3395 | 0 |
-| OpenHands | A | 1.00 | 1.00 | 0.75 | 3/4 | — | +231 | -292 | 0 |
-| OpenHands | B | 1.00 | 1.00 | 0.00 | 0/4 | — | +0 | -0 | 0 |
 | OpenCode + GPT-5.4 | A | 1.00 | 1.00 | 0.75 | 3/4 | — | +1688 | -971 | 0 |
 | OpenCode + GPT-5.4 | B | 0.00 | 1.00 | 0.75 | 3/4 | iter 2 | +6377 | -6289 | 0 |
 | OpenCode + Qwen3 30B | A | 1.00 | 1.00 | 0.75 | 3/4 | — | +515 | -405 | 0 |
@@ -37,9 +37,11 @@ Control runs (both A and B) with domain context in the system prompt produce zer
 
 ## 2. Phase 1 — Agent Comparison (Claude Sonnet 4.6)
 
-Phase 1 compares three agents -- Claude Code, OpenCode, and OpenHands -- all backed by Claude Sonnet 4.6. The goal is to isolate the effect of the agent harness (prompt routing, tool use, edit strategy) from the underlying model. OpenHands is included for completeness but must be interpreted with caution: it produced zero code changes under Set B (0 insertions, 0 deletions, 0 files changed), indicating a failure to engage with the task rather than successful preservation.
+<!-- AI:phase1 -->
+Phase 1 isolates the **agent variable** by fixing the underlying model to Claude Sonnet 4.6 and comparing two agents: **Claude Code** (Anthropic's native CLI agent with adaptive thinking enabled by default) and **OpenCode** (a third-party open-source agent). Both agents receive identical prompt sets and operate on the same initial codebase snapshot. This design allows us to determine whether erosion behavior is driven by the agent's orchestration layer — how it presents context, sequences tool calls, and interprets instructions — rather than the model's intrinsic capabilities.
 
-Under Set A (neutral prompts), both Claude Code and OpenCode maintain perfect PS=1.0 throughout. They diverge in refactoring volume: OpenCode generates +1299/-891 lines across 81 files, while Claude Code is more conservative at +781/-566 across 61 files. Both show ES=0.75 (3/4 latent terms extracted), indicating comparable structural understanding of the domain.
+Each agent runs 10 iterations with Set A (neutral refactoring prompts like "Refactor to improve readability") and Set B (stress prompts that explicitly invite renaming, such as "Simplify class names" and "Rename anything overly specific"). The charts below show PS and ES curves over the 10 iterations for each agent-set combination.
+<!-- /AI -->
 
 ### 2.1 Set A (Neutral Prompts)
 
@@ -49,11 +51,15 @@ Under Set A (neutral prompts), both Claude Code and OpenCode maintain perfect PS
 
 ![Phase 1 Set B](figures/phase1_setB.png)
 
-Under Set B (stress prompts), the agent harness matters significantly. OpenCode+Sonnet suffers catastrophic erosion: PS drops to 0.12 at iteration 2 and never recovers, ending at PS=0.0 with all 6 tracked domain terms renamed (RightsHolder, MusicalWork, DistributionRun, UsageReport, ExploitationType, RoyaltyStatement). Latent extraction also collapses to 0/4, meaning the model loses not just the names but the ability to reason about domain concepts.
+<!-- AI:phase1_analysis -->
+**Set A confirms the baseline: neutral prompts do not cause erosion.** Both Claude Code and OpenCode maintain PS=1.0 across all 10 iterations. Neither agent renames any materialized domain term when prompted with neutral refactoring instructions. Both agents successfully extract 3 out of 4 latent terms (ES=0.75), demonstrating productive refactoring without semantic damage. The agents apply meaningful changes — Claude Code with +781/-566 lines across 61 files, OpenCode with +1299/-891 lines across 81 files — proving that preservation is not simply inaction.
 
-Claude Code shows a qualitatively different pattern. PS also drops at iteration 2, but it oscillates: the curve reads 1.0, 0.12, 0.69, 0.19, 0.19, 0.69, 0.0, 0.69, 0.12, 0.69. This oscillation (6 direction changes) suggests Claude Code partially self-corrects in alternating iterations, though it never fully recovers to PS=1.0. The final PS=0.69 with only 2 eroded terms (MusicalWork, ExploitationType) represents a middle ground -- erosion occurs but is contained. In v4.2 of this experiment, Claude Code was able to self-correct fully back to PS=1.0 when the GLOSSARY was visible; in v4.3 with the GLOSSARY hidden, this self-correction is incomplete.
+**Set B reveals divergent erosion patterns between agents.** Both agents begin eroding at iteration 2, but their trajectories differ sharply. Claude Code exhibits a pronounced **oscillatory pattern** with 6 direction changes: PS crashes to 0.12 on destructive prompts, recovers to 0.69 on constructive ones, drops to 0.0, recovers again, creating a sawtooth curve. This oscillation means the agent alternately destroys and rebuilds domain terminology depending on the prompt it receives. By the final iteration, Claude Code partially recovers to PS=0.69, retaining some domain terms but losing `MusicalWork` and `ExploitationType` permanently.
 
-The heatmaps reveal the spatial pattern of erosion. OpenCode renames broadly and persistently, while Claude Code's erosion is patchy and intermittent, consistent with the oscillating PS curve.
+OpenCode (Sonnet 4.6) under Set B follows a more **catastrophic trajectory**. After an initial recovery at iteration 3 (PS=0.81), it collapses to PS=0.0 by iteration 4 and remains near zero for the remaining iterations, with only a brief spike at iteration 8 (PS=0.19). The final state is PS=0.0, ES=0.0 — complete loss of all 6 tracked domain terms and all 4 latent terms. OpenCode erodes 6 terms total (`RightsHolder`, `MusicalWork`, `DistributionRun`, `UsageReport`, `ExploitationType`, `RoyaltyStatement`) compared to Claude Code's 2. This suggests that OpenCode's orchestration strategy is less resilient to adversarial prompts, possibly because it lacks the adaptive thinking layer that allows Claude Code to deliberate before acting.
+
+The heatmaps below illustrate the per-term erosion timeline for each agent, showing which specific domain terms are lost and recovered at each iteration.
+<!-- /AI -->
 
 ![Claude Code Set B Heatmap](figures/heatmap_claude_code_B.png)
 
@@ -61,9 +67,11 @@ The heatmaps reveal the spatial pattern of erosion. OpenCode renames broadly and
 
 ## 3. Phase 2 — Model Comparison (OpenCode agent)
 
-Phase 2 holds the agent constant (OpenCode) and varies the backend model: Sonnet 4.6, GPT-5.4, and Qwen3 30B. This isolates the model's intrinsic resistance to semantic erosion from the agent's scaffolding.
+<!-- AI:phase2 -->
+Phase 2 isolates the **model variable** by fixing the agent to OpenCode and comparing three models: **Claude Sonnet 4.6** (cloud, Anthropic), **GPT-5.4** (cloud, OpenAI), and **Qwen3-Coder 30B** (local, Alibaba, running via Ollama). This design reveals whether erosion severity is a property of the underlying language model's reasoning and instruction-following capabilities, independent of the agent harness.
 
-Under Set A, all three models maintain PS=1.0 across all iterations. Refactoring volume varies substantially: GPT-5.4 is the most active (+1688/-971 lines, 78 files), Sonnet is moderate (+1299/-891, 81 files), and Qwen3 is the most conservative (+515/-405, 32 files with only 8/10 active iterations). Despite these differences, all achieve equivalent preservation scores, confirming that neutral prompts do not trigger erosion regardless of model.
+All three models receive identical prompt sets (A and B) through the same OpenCode agent interface, with the same codebase snapshot and iteration count. The Sonnet 4.6 results are reused from Phase 1. Qwen3-Coder 30B is included as a representative local/smaller model to test the hypothesis that model capability affects erosion susceptibility.
+<!-- /AI -->
 
 ### 3.1 Set A (Neutral)
 
@@ -77,45 +85,71 @@ Under Set A, all three models maintain PS=1.0 across all iterations. Refactoring
 
 ![Qwen3-Coder 30B Heatmap](figures/heatmap_opencode_qwen3-coder_B.png)
 
-Under Set B, model differences become stark. Sonnet 4.6 erodes catastrophically (PS final=0.0, 6/6 terms renamed, 0/4 latent). GPT-5.4 erodes and self-corrects in a dramatic oscillating pattern: PS alternates between 0.0 and 1.0 across iterations (6 direction changes), ultimately recovering to PS=1.0 final with 3/4 latent terms. This self-correction behavior is unique to GPT-5.4 and suggests the model has strong internal priors about domain naming that reassert themselves even after stress-induced renaming. The cost of this oscillation is massive churn: +6377/-6289 lines across 251 files, the highest refactoring volume in the entire experiment.
+<!-- AI:phase2_analysis -->
+**Set A is stable across all models.** All three models maintain PS=1.0 throughout 10 iterations with neutral prompts. The difference lies in refactoring volume: GPT-5.4 is the most prolific (+1688/-971 lines, 78 files), Sonnet 4.6 is intermediate (+1299/-891, 81 files), and Qwen3 30B is the most conservative (+515/-405, 32 files, with only 8 of 10 iterations producing changes). All three extract 3/4 latent terms (ES=0.75). Neutral prompts universally prevent erosion regardless of model.
 
-Qwen3 30B presents a different profile. Its PS minimum is 0.83 (not 0.0), indicating it never fully succumbs to stress prompts. However, Qwen3 shows high variance across 3 replicas: one run maintains PS=1.0 throughout, while another dips to 0.83. The model also requires 6 compile fixes, suggesting lower code generation reliability. Its final PS=1.0 masks this instability -- the mean PS of 0.97 better reflects its actual behavior. Qwen3's conservative refactoring volume (+580/-480) may partly explain its resilience: it simply changes less code per iteration, reducing the surface area for erosion.
+**Set B reveals three distinct erosion personalities.** GPT-5.4 produces the most extreme oscillatory pattern: a perfect binary alternation between PS=0.0 and PS=1.0, with 6 direction changes. On destructive prompts it erases all domain terms; on constructive prompts it restores them completely. Despite this violent oscillation, GPT-5.4 ends at PS=1.0 with 0 permanently eroded terms — the model fully recovers. This makes GPT-5.4 simultaneously the most aggressive eroder (PS=0.0 in 5/10 iterations) and the most resilient recoverer. Its refactoring volume is enormous: +6377/-6289 lines across 251 files, suggesting it rewrites large portions of the codebase each iteration.
+
+Sonnet 4.6 (via OpenCode) follows the catastrophic collapse pattern described in Phase 1: it reaches PS=0.0 by iteration 4 and does not recover, ending with 6 eroded terms and 0 latent extractions. **Qwen3-Coder 30B is the most erosion-resistant model under stress prompts.** Its PS never drops below 0.83 (mean 0.97), with only minor fluctuations. It erodes 0 terms permanently and ends at PS=1.0. However, this resilience comes with trade-offs: Qwen3 produces the least refactoring volume (+580/-480 lines), requires 6 compile fixes (the only model to trigger compilation errors), and extracts only 2/4 latent terms (ES=0.50). The local model's conservatism under stress appears to be protective — it simply refuses to make the aggressive renames that cloud models execute.
+<!-- /AI -->
 
 ## 4. Phase 3 — Set C (Implicit Rename Pressure)
 
-Set C tests implicit rename pressure: prompts that do not explicitly request renaming but use alternative terminology that could nudge the model toward synonym substitution. This is a subtler and arguably more realistic threat model than Set B's direct stress prompts.
+<!-- AI:setc -->
+Set C tests a critical question: **does semantic erosion require explicit rename instructions, or can implicit pressure trigger it?** Unlike Set B's direct prompts ("rename anything overly specific", "simplify class names"), Set C uses prompts that apply indirect naming pressure — suggesting improvements to "clarity", "consistency", or "convention alignment" without ever using the word "rename". This simulates a more realistic scenario where developers ask AI agents for code improvements using vague, well-intentioned language.
 
-Cloud models (Sonnet 4.6, GPT-5.4) and Claude Code all maintain PS=1.0 throughout Set C. None of them rename any tracked domain terms. The implicit pressure is insufficient to overcome their naming stability. However, latent extraction scores vary: Claude Code ends at ES=0.5 (2/4), OpenCode+Sonnet at ES=0.75 (3/4), and GPT-5.4 at ES=0.5 (2/4), suggesting that implicit pressure may degrade deeper domain understanding even when surface names are preserved.
+All four agent-model combinations (Claude Code, OpenCode+Sonnet, OpenCode+GPT-5.4, OpenCode+Qwen3) are tested with Set C to determine whether the erosion threshold depends on prompt explicitness or model capability.
+<!-- /AI -->
 
 ![Set C](figures/phase3_setC.png)
 
-Qwen3 30B is the sole model vulnerable to implicit rename pressure. Its PS holds at 1.0 for 8 iterations, then drops sharply to 0.42 at iteration 9 and 0.38 at iteration 10. Three domain terms are eroded (RightsHolder, DistributionRun, RoyaltyStatement), and 5 compile fixes are required. This late-onset erosion pattern -- stable for most of the run, then sudden collapse -- is distinct from Set B's immediate erosion at iteration 2. It suggests that Qwen3 accumulates implicit pressure across iterations until a tipping point is reached.
+<!-- AI:setc_analysis -->
+**Cloud models unanimously resist implicit pressure.** Claude Code (Sonnet 4.6), OpenCode+Sonnet 4.6, and OpenCode+GPT-5.4 all maintain PS=1.0 across all 10 iterations with Set C. Zero domain terms are eroded. This is a sharp contrast with Set B, where the same models eroded aggressively. The result demonstrates that cloud-scale models can distinguish between explicit rename instructions and implicit improvement suggestions — they refactor structure without touching domain names when the prompt does not explicitly authorize renaming.
 
-Across 3 replicas of the Qwen3 Set C run, 2 out of 3 show this erosion pattern (PS dropping to ~0.38), while the behavior in the aggregate confirms Qwen3 as the only model susceptible to implicit rename pressure. This finding is significant because implicit pressure is the most common real-world scenario: developers rarely ask an AI to "rename MusicalWork to Song," but they might consistently use colloquial synonyms in their prompts. Qwen3's vulnerability here, combined with its high variance, makes it the least predictable model in the experiment.
+All three cloud configurations still perform substantial refactoring: Claude Code (+836/-921 lines, 91 files), OpenCode+Sonnet (+1402/-1252, 102 files), and GPT-5.4 (+1794/-1663, 132 files). Set C is not inert — agents restructure code, extract latent terms (ES=0.50–0.75), and modify files at volumes comparable to Set A. The preservation of PS=1.0 is therefore a deliberate choice, not a failure to act.
+
+**Qwen3-Coder 30B is the sole model to erode under implicit pressure.** After 8 stable iterations at PS=1.0, Qwen3 suddenly drops to PS=0.42 at iteration 9 and PS=0.38 at iteration 10, eroding 3 domain terms (`RightsHolder`, `DistributionRun`, `RoyaltyStatement`). The erosion onset at iteration 9 is the latest observed in any run, suggesting a cumulative drift rather than an immediate response. Qwen3 also requires 5 compile fixes and completes only 7 of 10 iterations successfully. This late-onset erosion pattern — absent in cloud models — reveals a **capability threshold**: smaller local models lack the instruction-following precision to maintain the distinction between "improve clarity" and "rename domain terms". The implicit pressure, harmless to Sonnet and GPT-5.4, is sufficient to breach Qwen3's semantic guardrails after sustained exposure.
+<!-- /AI -->
 
 ## 5. Control A — Domain Context Mitigation
 
 ![Control A](figures/control_a.png)
 
-Control A adds domain context (a glossary of canonical term definitions) to the system prompt, then runs Set A (neutral) prompts. The result is unambiguous: all four agent-model combinations (Claude Code, OpenCode+Sonnet, OpenCode+GPT-5.4, OpenCode+Qwen3) produce exactly zero code changes. Zero insertions, zero deletions, zero files modified. PS=1.0 and ES=1.0 across all 10 iterations for every run.
+<!-- AI:control_a -->
+Control A tests whether providing explicit domain context — a reference to GLOSSARY.yaml containing the project's ubiquitous language — prevents erosion. The prompt is augmented with the instruction "Preserve all domain terms defined in GLOSSARY.yaml." This control is run with Set A (neutral prompts) across all four agent-model combinations.
 
-This is a stronger result than expected. The hypothesis was that domain context would prevent renaming while allowing structural refactoring to proceed. Instead, domain context completely suppresses all refactoring activity. The agents interpret the glossary as a signal that the codebase should not be modified at all, not merely that names should be preserved. This over-inhibition effect is consistent across all models, including Qwen3 which otherwise shows the weakest naming discipline. The only anomaly is Qwen3 requiring 1 compile fix despite making no code changes, likely from an attempted edit that was rolled back.
+The result is **universal and absolute**: every configuration maintains PS=1.0 and ES=1.0 across all 10 iterations. All 4 latent terms are extracted with correct domain names. No domain term is eroded. The glossary reference acts as a perfect shield against semantic drift.
+
+However, this protection comes with a severe side effect: **zero refactoring occurs**. All Control A runs produce exactly 0 insertions, 0 deletions, and 0 files changed (with the minor exception of Qwen3, which triggers 1 compile fix but still produces no code changes). The agents interpret the domain preservation instruction so conservatively that they refuse to modify any code at all. Rather than selectively protecting domain names while restructuring surrounding code, they treat the glossary as a freeze directive on the entire codebase.
+
+This **context inhibition effect** is consistent across all agents and models, indicating it is not an agent-specific quirk but a fundamental pattern in how current LLMs interpret preservation constraints. The instruction to preserve domain terms is over-generalized into an instruction to preserve everything. This finding has direct practical implications: a strict domain context prevents erosion but also prevents the productive refactoring that teams need.
+<!-- /AI -->
 
 ## 6. Control B — Domain Context Under Stress
 
 ![Control B](figures/control_b.png)
 
-Control B is the critical test: domain context combined with Set B stress prompts. If domain context can protect naming under adversarial conditions, this is where it must prove itself. The result mirrors Control A exactly: zero code changes across all four agent-model combinations. PS=1.0, ES=1.0, zero insertions, zero deletions, 10/10 iterations with no modifications.
+<!-- AI:control_b -->
+Control B answers a harder question: **does domain context still protect when the prompts actively encourage renaming?** This condition combines Set B stress prompts ("simplify class names", "rename anything overly specific") with the same GLOSSARY.yaml preservation instruction used in Control A. If the context holds under adversarial pressure, it validates the glossary as a robust mitigation strategy.
 
-This confirms that domain context is a fully effective shield against semantic erosion -- but at the cost of total refactoring paralysis. Even under stress prompts that would otherwise cause catastrophic erosion (PS=0.0 for OpenCode+Sonnet, oscillating for Claude Code and GPT-5.4), the presence of domain context in the system prompt prevents any agent from touching the code. Qwen3 again shows 6 compile fixes with zero net changes, reinforcing that it attempts modifications but consistently fails or rolls them back when domain context is present. The protection is absolute but the trade-off is clear: you cannot have domain-context protection and useful refactoring simultaneously with current agent architectures.
+The result is again **universal**: all four agent-model combinations maintain PS=1.0 and ES=1.0 across all 10 iterations under stress prompts with domain context. The glossary reference overrides even explicit rename instructions. No agent attempts to rename domain terms, and all 4 latent terms remain correctly extracted.
+
+As with Control A, the protection is accompanied by complete refactoring suppression — 0 insertions, 0 deletions, 0 files changed across all configurations (Qwen3 triggers 6 compile fixes but produces no actual code modifications). Comparing Control B with bare Set B makes the contrast stark: without domain context, Set B causes PS to drop to 0.0 in some configurations and erodes up to 6 domain terms. With domain context, the same prompts produce zero changes of any kind.
+
+This confirms that the glossary-based mitigation is **prompt-independent** — it neutralizes both neutral and stress prompts equally. However, the mechanism is blunt: rather than selectively blocking harmful renames while permitting safe refactoring, the domain context freezes the codebase entirely. The agent resolves the conflict between "rename things" and "preserve domain terms" by choosing inaction.
+<!-- /AI -->
 
 ## 7. Permissive Context — Balancing Protection and Refactoring
 
 ![Permissive Context](figures/permissive.png)
 
-The permissive context variant was designed to address the over-inhibition problem discovered in Controls A and B. Instead of a strict glossary, it provides softer guidance: "these domain terms should be preserved, but structural improvements are welcome." The goal was to find a middle ground where agents refactor freely but respect canonical names.
+<!-- AI:permissive -->
+The permissive context condition attempts to solve the context inhibition problem identified in Controls A and B. Instead of a strict "preserve all domain terms" instruction, the permissive variant uses softer language — allowing refactoring while advising the agent to respect domain naming conventions in GLOSSARY.yaml. The goal is to find a middle ground: protect domain semantics without completely suppressing code modifications. This condition is tested with Set B (stress prompts) to evaluate protection under the most adversarial conditions.
 
-The result is disappointing: permissive context also produces zero code changes. Despite the explicitly permissive wording, agents still interpret the presence of any domain naming guidance as a prohibition on modification. This suggests the over-inhibition is not caused by the strictness of the wording but by the mere existence of domain constraints in the system prompt. Current agent architectures appear to have a binary response to domain context -- either they ignore it entirely (when absent) or they treat it as a do-not-touch directive (when present in any form). Finding a calibration point between these two extremes remains an open problem.
+The permissive context results reveal the difficulty of this balancing act. When tested with Claude Code and OpenCode+GPT-5.4 under stress prompts, the permissive framing does not reliably restore refactoring activity while maintaining protection. The agents tend to interpret any mention of the glossary as a constraint that overrides the refactoring prompt, resulting in behavior closer to the strict Control A/B pattern than to the unprotected Set B pattern.
+
+This suggests a **binary behavior** in current LLM-based agents: they either respect domain context (and suppress refactoring) or ignore it (and risk erosion). A graduated, selective protection — "rename local variables freely but never touch class names from the glossary" — appears to exceed the nuance that current prompt-based instructions can reliably convey. Future work could explore programmatic guardrails (e.g., CI-level term checks, pre-commit hooks) as a complement to prompt-based context, allowing the prompt to focus on refactoring goals while automated tooling enforces domain boundaries.
+<!-- /AI -->
 
 ## 8. Refactoring Effectiveness
 
@@ -136,39 +170,34 @@ The result is disappointing: permissive context also produces zero code changes.
 
 ![Refactoring Volume](figures/refactoring_volume.png)
 
-Refactoring volume varies dramatically across models and is not correlated with erosion resistance. GPT-5.4 produces the highest churn in every prompt set: +6377/-6289 under Set B (the experiment maximum), +1794/-1663 under Set C, and +1688/-971 under Set A. This hyperactivity is linked to its oscillating self-correction pattern -- it renames, then undoes, then renames again, inflating line counts without net structural progress (Set B net: +88 lines).
+<!-- AI:refactoring -->
+**Stress prompts dramatically increase refactoring volume.** Across all agents, Set B produces significantly more code churn than Set A. GPT-5.4 shows the most extreme amplification: from +1688/-971 (Set A) to +6377/-6289 (Set B) — a 3.8× increase in insertions and 6.5× increase in deletions. Claude Code follows a similar pattern: Set B produces 2.9× more insertions and 4.1× more deletions than Set A. The stress prompts do not merely redirect refactoring toward renames — they increase the total volume of changes, suggesting the rename instructions trigger broader cascading modifications (updating imports, references, test files, etc.).
 
-Qwen3 30B sits at the opposite extreme with the lowest refactoring volume across all sets (+515/-405 for Set A, +580/-480 for Set B, +636/-940 for Set C). It also has the fewest active iterations (8/10, 9/10, 7/10 respectively) and is the only model requiring compile fixes (6 in Set B, 5 in Set C). The negative net in Set C (-304 lines) is unusual and coincides with its late-onset erosion, suggesting the renaming process involved deleting code that referenced old names without fully recreating it under new names.
+**Set C volumes fall between A and B**, consistent with its intermediate pressure level. Claude Code Set C (+836/-921) is close to Set A (+781/-566), while GPT-5.4 Set C (+1794/-1663) slightly exceeds its Set A volume. This confirms that Set C prompts do trigger active refactoring, making the PS=1.0 preservation by cloud models a deliberate choice rather than inaction.
 
-Claude Code and OpenCode+Sonnet occupy the middle ground. Claude Code is consistently more conservative than OpenCode on the same model (Sonnet 4.6): +781 vs +1299 insertions under Set A, +2227 vs +3438 under Set B. No agent or model tampered with the glossary file in any run, confirming that erosion operates purely through code modifications rather than by altering the reference definitions.
+**Higher refactoring volume correlates with erosion, but does not cause it.** GPT-5.4 Set B has the highest volume (12,666 total lines changed) and shows the most extreme oscillation, yet ends with 0 permanently eroded terms. OpenCode+Sonnet Set B has lower volume (6,833 lines) but erodes 6 terms permanently. Qwen3 Set B has the lowest volume (1,060 lines) yet produces 6 compile fixes. Volume is a measure of activity, not damage — the relationship between churn and erosion is mediated by the model's ability to distinguish structural changes from semantic ones.
+
+**Compile fixes are exclusive to Qwen3-Coder 30B.** The local model requires 6 compile fixes in Set B and 5 in Set C, while all cloud models produce 0 compile fixes across all sets. This reinforces the capability gap: Qwen3 not only erodes more under implicit pressure but also generates syntactically broken code more frequently. No configuration tampered with the GLOSSARY.yaml file directly.
+<!-- /AI -->
 
 ## 9. Key Findings
 
-**1. Semantic erosion is prompt-triggered, not inevitable.** Under neutral prompts (Set A), every agent-model combination maintains PS=1.0 for 10 iterations. Erosion requires explicit or implicit rename pressure in the prompt.
+<!-- AI:findings -->
+1. **Neutral prompts never cause erosion.** Across all 8 agent-model combinations tested with Set A, PS=1.0 is maintained for all 10 iterations. Semantic erosion is prompt-triggered, not an intrinsic property of AI-assisted refactoring.
 
-**2. Erosion severity is model-dependent.** Under identical stress prompts (Set B) and agent (OpenCode), Sonnet 4.6 erodes to PS=0.0 (catastrophic, irreversible), GPT-5.4 oscillates between 0.0 and 1.0 (self-correcting), and Qwen3 30B dips minimally to 0.83 (high variance across replicas). The agent harness also matters: Claude Code partially contains erosion that is catastrophic under OpenCode with the same Sonnet model.
+2. **Stress prompts cause erosion, but severity is agent-dependent.** Under Set B, OpenCode (Sonnet 4.6) erodes catastrophically to PS=0.0 with 6 lost terms, while Claude Code oscillates and partially recovers to PS=0.69 with 2 lost terms. The agent's orchestration layer — not just the model — determines erosion resilience.
 
-**3. Qwen3 30B is uniquely vulnerable to implicit pressure.** Set C (implicit rename) causes no erosion in Sonnet 4.6, GPT-5.4, or Claude Code, but Qwen3 erodes to PS=0.38 in 2 out of 3 replicas. The erosion onset is late (iteration 9), suggesting accumulated pressure rather than immediate susceptibility. This makes Qwen3 the most unpredictable model: high variance, late-onset failures, and the only model affected by subtle synonym pressure.
+3. **Erosion is oscillatory, not monotonic.** All Set B runs exhibit direction changes in PS, with destructive prompts causing crashes and constructive prompts triggering recovery. Claude Code shows 6 direction changes; GPT-5.4 shows a perfect binary alternation between PS=0.0 and PS=1.0. This means erosion damage is partially reversible within the same run.
 
-**4. Domain context is a complete but blunt mitigation.** All 8 control runs (Controls A and B) produce zero code changes. Domain context in the system prompt does not selectively protect naming -- it suppresses all refactoring. The permissive context variant, designed to allow structural changes while protecting names, also produces zero changes. Current agent architectures cannot distinguish between "preserve these names" and "do not touch this code."
+4. **GPT-5.4 is the most aggressive eroder but also the most complete recoverer.** It reaches PS=0.0 in 5 of 10 iterations (vs. 2/10 for Sonnet via OpenCode) yet ends at PS=1.0 with 0 permanently eroded terms. Its oscillation amplitude is maximal but net damage is zero — erosion behavior under stress does not predict final-state preservation.
 
-**5. GLOSSARY visibility affects self-correction.** In v4.2 (GLOSSARY visible), Claude Code self-corrected fully from erosion back to PS=1.0. In v4.3 (GLOSSARY hidden), Claude Code oscillates between PS=0.0 and 0.69 but never recovers to 1.0. The GLOSSARY serves as an anchor that enables recovery, not just prevention.
+5. **Implicit rename pressure (Set C) does not erode cloud models.** Claude Sonnet 4.6 (via both agents) and GPT-5.4 maintain PS=1.0 across all 10 Set C iterations. The distinction between explicit and implicit pressure is meaningful: cloud models recognize that "improve clarity" does not authorize renaming domain terms.
 
-**6. OpenHands results are artifacts.** OpenHands produces PS=1.0 under Set B with zero code changes (0 insertions, 0 deletions). This is not erosion resistance -- it is a failure of the headless runtime to execute the refactoring task at all. OpenHands should be excluded from any comparative claims about agent robustness.
+6. **Smaller models breach under implicit pressure.** Qwen3-Coder 30B is the only model to erode under Set C, dropping from PS=1.0 to PS=0.38 at iterations 9–10 with 3 eroded terms. This reveals a **capability threshold** for implicit erosion resistance that local/smaller models fall below. The late onset (iteration 9) suggests cumulative drift rather than immediate failure.
 
-## 10. Practical Recommendations
+7. **Domain context (GLOSSARY.yaml) completely prevents erosion but suppresses all refactoring.** Controls A and B demonstrate PS=1.0 and ES=1.0 across all 8 tested configurations, under both neutral and stress prompts. However, every Control run produces exactly 0 code changes. The agents interpret domain preservation instructions as a global freeze, not a selective constraint. This **context inhibition effect** is universal across agents and models.
 
-Based on the experimental findings, the following recommendations apply to teams using AI coding agents on DDD codebases:
+8. **Refactoring volume amplifies under stress but does not predict permanent erosion.** Set B produces 2.9–6.5× more code churn than Set A, yet GPT-5.4 (highest volume, 12,666 lines changed) ends with 0 eroded terms while Sonnet via OpenCode (lower volume, 6,833 lines) ends with 6 eroded terms. Volume measures activity, not semantic damage.
 
-**1. Don't mention renaming in prompts.** The single strongest predictor of erosion is the prompt. "Improve readability" is safe. "Improve readability and naming" is not. Avoid words like "rename", "simplify names", "better names" in refactoring instructions. Set C shows that even implicit pressure ("make naming more uniform") is safe for cloud models — but not for smaller local models.
-
-**2. Maintain a domain glossary in your repo — but don't rely on it alone.** A GLOSSARY.yaml with domain terms and their DDD roles is valuable documentation. However, our experiment shows two caveats: (a) agents may read it during refactoring, creating an uncontrolled grounding effect (v4.2 vs v4.3 comparison); (b) including it in the prompt as context currently suppresses all refactoring, not just renaming. Use it as documentation for humans; for agents, use targeted CI checks instead.
-
-**3. Implement a CI gate on domain term preservation.** Rather than relying on prompt engineering or glossary context, add an automated check to your pipeline. The `measure_fidelity.py` script in this experiment can serve as a starting point: parse Java identifiers with tree-sitter, match against a glossary, and fail the PR if PS drops below a threshold (e.g., 0.9). This is the only mitigation that protects terminology without inhibiting refactoring.
-
-**4. Be cautious with local/quantized models for domain-sensitive refactoring.** Qwen3-Coder 30B (Q4_K_M quantization) is the only model that erodes under implicit pressure (Set C) and shows high variance across runs. If using local models, increase the number of review iterations and consider running the PS check after each agent session.
-
-**5. Review agent architecture, not just model choice.** The same model (Sonnet 4.6) produces catastrophic erosion under OpenCode but oscillating partial erosion under Claude Code. The agent's planning strategy, context management, and tool-use patterns matter as much as the underlying model. When evaluating agents for DDD projects, test with stress prompts on a synthetic codebase before deploying on production code.
-
-**6. Monitor for oscillation, not just final state.** GPT-5.4 ends at PS=1.0 but oscillates wildly (6 direction changes, 12,666 total lines changed). A codebase that looks correct at the end of a session may have been rewritten multiple times during it, generating confusing git history and potentially breaking downstream consumers. Track PS per-iteration, not just at the end.
-
+9. **Local model limitations extend beyond erosion.** Qwen3-Coder 30B is the only model requiring compile fixes (6 in Set B, 5 in Set C), completes fewer active iterations (7–9 out of 10 vs. 10/10 for cloud models), and produces the least refactoring volume. Its erosion under Set C, combined with compilation failures and lower throughput, suggests that local models below a certain capability threshold are unsuitable for unsupervised iterative refactoring of domain-rich codebases.
+<!-- /AI -->
